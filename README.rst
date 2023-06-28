@@ -1,0 +1,61 @@
+IPython Extensions for Teaching
+===============================
+
+This project provides a set of IPython extensions used for teaching at the
+Ecole de Technologie Superieure (ETS) of Montreal. The extensions work on
+Google Colab, and Jupyter notebooks with some effort, and provide a set of
+magics (e.g., `%%sql`) while customizing existing ones (e.g., `%%javascript`)
+to enable lecturers and students to deploy software frameworks quickly and
+provide notes with working examples.
+
+The `notebooks` directory contains a set of Google Colab notebooks demonstrating
+how to use the extensions.
+
+Installing the Extensions
+-------------------------
+
+You can use `pip` to install the extensions:
+
+.. code-block::
+
+    pip3 install classroom_extensions
+
+or:
+
+.. code-block::
+
+    pip3 install git+https://github.com/assuncaomarcos/classroom_extensions.git
+
+Or clone this git repository and load the required extensions from the `classroom_extensions` package.
+
+MariaDB Magics
+--------------
+
+Two extensions are available for MariaDB. One extension (`mariadb`) uses some
+components of the MariaDB Jupyter Kernel and creates a `%%sql` cell magic that enables
+code cells to accept SQL commands that an instance of MariaDB interprets. However,
+unlike the MariaDB Jupyter Kernel, this extension does not change the IPython kernel
+and its magics, enabling one to continue coding in Python, JavaScript, etc. To ease the
+creation of notebooks on Google Colab, a second extension (`mariadb_install`) installs
+MariaDB and the required libraries to run the first extension without worrying
+about setting things up.
+
+Server-Side JavaScript
+----------------------
+
+This extension, called `node,` customizes the `%%javascript` magic to enable
+executing JavaScript code on the server or container hosting the Jupyter Notebook or
+on Google Colab. Node.js executes the code provided in a cell whose `--target` argument
+receives the value `node`. It also enables starting long-running Node.js server
+processes that will listen on given ports without blocking the code cell of
+the notebook. In addition to executing JavaScript code on the server side, when run
+on the browser, the magic enables printing the output of the browser's console in
+the result section of the code cell.
+
+Custom HTML Magic
+-----------------
+
+The `html` extension customizes the `%%html` magic. After rendering the HTML
+code inserted in the cell, the extension displays a high-level copy of the
+browser's console. This behavior helps in teaching HTML or JavaScript that writes
+on the console.

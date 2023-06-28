@@ -1,0 +1,68 @@
+:root {
+    --font-title: 'Lato', 'Lucida Grande', 'Lucida Sans Unicode', Tahoma, Sans-Serif;
+    --font-log: Consolas, Monaco, 'Courier New', monospace;
+}
+
+.console-title {
+    font-family: var(--font-title);
+    font-weight: 700;
+    color: black;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 9px 10px;
+    white-space: nowrap;
+    margin: 0;
+}
+
+.console-box {
+    max-width: 70vw;
+}
+
+.console-error, .console-log, .console-warn {
+    font-family: var(--font-log);
+    white-space: nowrap;
+    font-weight: 520;
+    font-size: 0.9rem;
+    line-height: 1.1rem;
+    padding: 2px 10px;
+    overflow-y: auto;
+    border-bottom: 1px solid #A9A9A9;
+    color: black;
+    margin: 0;
+}
+
+.console-error {
+    color: #8B0000;
+    border-bottom-color: #FFC0CB;
+    background-color: #FFE4E1;
+}
+
+.console-warn {
+    color: #A0522D;
+    border-bottom-color: #FFDEAD;
+    background-color: #FFFACD;
+}
+
+@media (max-width: 600px) {
+    .console-box {
+        max-width: 95vw;
+    }
+}
+
+@media (max-width: 992px) {
+    .console-box {
+        max-width: 90vw;
+    }
+}
+
+@media (min-width: 993px) {
+    .console-box {
+        max-width: 85vw;
+    }
+}
+
+@media (min-width: 1200px) {
+    .console-box {
+        max-width: 70vw;
+    }
+}
