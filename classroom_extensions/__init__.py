@@ -6,5 +6,6 @@ __version__ = '0.0.1'
 __all__ = [
     "mariadb",
     "mariadb_install",
-    "node"
+    "node",
+    "html"
 ]

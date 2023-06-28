@@ -9,7 +9,7 @@ Note: This extension assumes that you are working in Google Colab
 running Ubuntu 20.04.
 """
 from IPython.core.getipython import get_ipython
-from IPython.core.magic import register_line_magic
+from IPython.core.magic import line_magic
 from .util import exec_cmd, get_os_release, is_colab, get_user
 import argparse
 
@@ -30,7 +30,7 @@ def _start_mariadb() -> None:
     time.sleep(START_DB_TIMEOUT)
 
 
-@register_line_magic
+@line_magic
 def install_mariadb(line: str):
     """ Install MariaDB, mariadb_kernel, sqlparse, etc """
     if not meet_requirements():
@@ -93,3 +93,20 @@ def _load_sample_db(db_user: str, db_pass: str):
     exec_cmd(f"mariadb -e \"source nation.sql\" --user={db_user} --password={db_pass}")
     print("Done.")
     exec_cmd("rm nation.zip")
+
+
+def load_ipython_extension(ipython):
+    """
+    Loads the ipython extension
+    :param ipython: The currently active `InteractiveShell` instance.
+    :return: None
+    """
+    try:
+        ipython.register_magic_function(install_mariadb)
+    except NameError:
+        print("IPython shell not available.")
+
+
+# Check if the module has not been loaded with %load_ext
+if '__IPYTHON__' not in globals():
+    load_ipython_extension(get_ipython())
