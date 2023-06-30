@@ -59,3 +59,12 @@ The `html` extension customizes the `%%html` magic. After rendering the HTML
 code inserted in the cell, the extension displays a high-level copy of the
 browser's console. This behavior helps in teaching HTML or JavaScript that writes
 on the console.
+
+PlantUML Magics
+---------------
+
+PlantUML is a textual domain-specific language (DSL) used for creating diagrams,
+primarily focused on software engineering and system design. It allows you to
+express diagrams using a simple and intuitive syntax, which PlantUML transforms into
+various types of visual diagrams, such as UML (Unified Modeling Language), sequence,
+class, activity, and more.

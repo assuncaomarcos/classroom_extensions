@@ -44,7 +44,7 @@ version = "0.0.1"
 dependencies = ["ipython", "psutil>=5.9.5" ]
 
 [project.optional-dependencies]
-dev = ["ipython", "jupyter", "mariadb>=1.0.11", "mariadb-kernel==0.2.0", "sqlparse"]
+dev = ["ipython", "jupyter", "mariadb>=1.0.11", "mariadb-kernel==0.2.0", "sqlparse", "plantweb"]
 test = ["pytest", "coverage", "testcontainers[mysql]"]
 
 [project.urls]

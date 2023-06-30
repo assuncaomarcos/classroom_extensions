@@ -7,5 +7,6 @@ __all__ = [
     "mariadb",
     "mariadb_install",
     "node",
-    "html"
+    "html",
+    "plantuml"
 ]
