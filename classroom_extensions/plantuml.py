@@ -36,19 +36,19 @@ class PlantUmlMagics(DisplayMagics):
 
     def __init__(self, shell=None):
         super().__init__(shell=shell)
-        self._plantweb_config = self._load_platweb_config()
+        self._plantweb_config = self._load_plantweb_config()
 
     @property
     def plantweb_config(self):
         return self._plantweb_config
 
-    def _load_platweb_config(self) -> dict[str, Any]:
+    def _load_plantweb_config(self) -> dict[str, Any]:
         if not exists(self._config_path):
             return copy(DEFAULT_PLANTWEB_CONFIG)
         with open(self._config_path, 'r') as fd:
             return dict(json.loads(fd.read()))
 
-    def _save_platuml_config(self) -> None:
+    def _save_plantuml_config(self) -> None:
         with open(self._config_path, 'w') as fd:
             fd.write(json.dumps(self._plantweb_config))
 
@@ -75,7 +75,7 @@ class PlantUmlMagics(DisplayMagics):
         args = parser.parse_args(line.split() if line else "")
         if args.server:
             self._plantweb_config['server'] = args.server
-            self._save_platuml_config()
+            self._save_plantuml_config()
         else:
             print("Use --server=address to provide the address of a valid PlantUML server")
 
