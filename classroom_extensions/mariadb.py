@@ -47,7 +47,7 @@ class MariaDBMagics(DisplayMagics):
         try:
             parser = CodeParser(self.log, cell, ";")
         except ValueError as e:
-            print(f"Error with SQL parser: {str(e)}")
+            self.log.error(f"Error with SQL parser: {str(e)}")
             return
 
         result = ""
@@ -55,7 +55,7 @@ class MariaDBMagics(DisplayMagics):
             result += self.db_client.run_statement(stmt)
 
             if self.db_client.iserror():
-                print(f"Error: {self.db_client.error_message()}")
+                self.log.error(f"Error: {self.db_client.error_message()}")
                 continue
 
         display_obj = HTML(result) if self.in_notebook else result
@@ -71,9 +71,9 @@ def load_ipython_extension(ipython):
     try:
         ipython.register_magics(MariaDBMagics(ipython))
     except ServerIsDownError as se:
-        print(f"Error trying to access MariaDB Server: {se}")
+        ipython.log.error(f"Error trying to access MariaDB Server: {se}")
     except NameError as ne:
-        print(f"Error registering the magic command: {ne}")
+        ipython.log.error(f"Error registering the magic command: {ne}")
 
 
 # Check if the module has not been loaded with %load_ext

@@ -1,0 +1,27 @@
+version: '3.8'
+services:
+  mariadb:
+    image: mariadb:latest
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpassword
+      MARIADB_DATABASE: testdb
+      MARIADB_USER: testuser
+      MARIADB_PASSWORD: testpassword
+    volumes:
+      - ./mariadb-data:/var/lib/mysql
+      - /var/run/mysqld:/var/run/mysqld
+    ports:
+      - "3306:3306"
+
+  mongodb:
+    image: mongo:latest
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: testdb
+    volumes:
+      - ./mongodb-data:/data/db
+    ports:
+      - "27017:27017"

@@ -85,11 +85,23 @@ def load_ipython_extension(ipython):
     try:
         html_magic = HTMLMagics(ipython)
         ipython.register_magics(html_magic)
-        ipython.web_magic = html_magic
+        ipython.html_magic = html_magic
+    except NameError:
+        print("IPython shell not available.")
+
+
+def unload_ipython_extension(ipython):
+    """ To unload the extension """
+    try:
+        del ipython.html_magic
     except NameError:
         print("IPython shell not available.")
 
 
 # Check if the module has not been loaded with %load_ext
 if '__IPYTHON__' not in globals():
-    load_ipython_extension(get_ipython())
+    try:
+        shell = get_ipython()
+        load_ipython_extension(shell)
+    except NameError:
+        print("IPython shell not available.")

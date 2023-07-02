@@ -1,21 +1,13 @@
 
 import unittest
-from IPython.testing.globalipapp import get_ipython
-import logging
+from .base import BaseTestCase
 
 
-class TestNodeJs(unittest.TestCase):
-    """ Testcase for the NodeJs extension """
-
-    @classmethod
-    def setUpClass(cls) -> None:
-        cls.ipython = get_ipython()
-
-    def setUp(self) -> None:
-        self.ipython.log.setLevel(logging.DEBUG)
-        self.ipython.log.addHandler(logging.StreamHandler())
+class TestPlantUML(BaseTestCase):
+    """ Testcase for the PlantUML extension """
 
     def test_config(self):
+        print("Testing PlantUML config...")
         from classroom_extensions.plantuml import PlantUmlMagics
         magics1 = PlantUmlMagics(shell=self.ipython)
         previous_server = magics1.plantweb_config['server']
@@ -25,6 +17,7 @@ class TestNodeJs(unittest.TestCase):
         magics2.plantuml_config(f"--server={previous_server}")
 
     def test_render(self):
+        print("Testing PlantUML rendering...")
         from classroom_extensions.plantuml import PlantUmlMagics
         content = """
         actor Foo1
@@ -41,6 +34,7 @@ class TestNodeJs(unittest.TestCase):
         magics.plantuml(cell=content)
 
     def test_load_extension(self):
+        print("Testing loading/unloading extension...")
         self.ipython.extension_manager.load_extension('classroom_extensions.plantuml')
         second_load = self.ipython.extension_manager.load_extension('classroom_extensions.plantuml')
         self.assertEqual(second_load, "already loaded")

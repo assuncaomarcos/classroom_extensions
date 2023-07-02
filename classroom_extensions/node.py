@@ -23,11 +23,10 @@ START_SERVER_TIMEOUT = 5
 
 class NodeProcessManager(object):
     """ Used to manage the execution of Node processes """
-    _daemons: dict[int, Any]
     _node_cmd: str = "/usr/bin/node"
 
     def __init__(self):
-        self._daemons = {}
+        self._daemons: dict[int, Any] = {}
         self._node_cmd = shutil.which('node')  # Try to discover full path of node command
 
     @classmethod
@@ -143,13 +142,17 @@ class NodeProcessManager(object):
         else:
             self._force_kill(port)
 
-    def __del__(self):
+    def cleanUp(self):
         """ Some cleanup during testing and extension unloading """
         for proc in self._daemons.values():
             try:
                 proc.terminate()
             except ProcessLookupError as e:
                 print(f"Error: process not found {e}")
+        self._daemons.clear()
+
+    def __del__(self):
+        self.cleanUp()
 
 
 # This code JavaScript will be included with the cell's code to
@@ -332,6 +335,10 @@ def load_ipython_extension(ipython):
         ipython.node_magic = node_magic
     except NameError:
         print("IPython shell not available.")
+
+
+def unload_ipython_extension(ipython):
+    del ipython.node_magic
 
 
 # Check if the module has not been loaded with %load_ext

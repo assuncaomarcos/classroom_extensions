@@ -2,31 +2,20 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from IPython.testing.globalipapp import get_ipython
-from .publisher import CaptureDisplayPub
-import logging
+from .base import BaseTestCase
 
 
-class TestHTML(unittest.TestCase):
+class TestHTML(BaseTestCase):
     """ Testcase for the HTML extension """
 
-    @classmethod
-    def setUpClass(cls) -> None:
-        cls.ipython = get_ipython()
-
     def setUp(self) -> None:
-        self.ipython.log.setLevel(logging.DEBUG)
-        self.ipython.log.addHandler(logging.StreamHandler())
-
-        # To be able to intercept the calls to display()
-        self.publisher = CaptureDisplayPub(self.ipython.display_pub)
-        self.ipython.display_pub = self.publisher
-
-    def test_loading_extension(self):
         self.ipython.extension_manager.load_extension('classroom_extensions.html')
+
+    def tearDown(self):
         self.ipython.extension_manager.unload_extension('classroom_extensions.html')
 
     def test_javascript(self):
+        print("Testing HTML with JavaScript")
         from classroom_extensions.html import HTMLWithConsole
         self.ipython.extension_manager.load_extension('classroom_extensions.html')
         expected_dir = {"text/plain": f"<{HTMLWithConsole.__module__}."

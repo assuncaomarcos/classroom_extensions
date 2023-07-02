@@ -25,6 +25,8 @@ share/python-wheels/
 .installed.cfg
 *.egg
 temp/*
+mariadb-data/*
+mongodb-data/*
 #MANIFEST
 
 # PyInstaller

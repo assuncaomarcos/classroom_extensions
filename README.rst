@@ -68,3 +68,13 @@ primarily focused on software engineering and system design. It allows you to
 express diagrams using a simple and intuitive syntax, which PlantUML transforms into
 various types of visual diagrams, such as UML (Unified Modeling Language), sequence,
 class, activity, and more.
+
+MongoDB Shell Magics
+--------------------
+
+The IPython extension "%%mongo" enables seamless interaction with MongoDB using
+the `mongosh` CLI. By simply prefixing a cell with `%%mongo`, users can execute queries
+and commands against a MongoDB database directly within their IPython environment
+or Colab. The extension leverages the power of the `mongosh` CLI to provide a simple
+and familiar MongoDB Shell experience, allowing for data exploration, manipulation,
+and administration tasks.
