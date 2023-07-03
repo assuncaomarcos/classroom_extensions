@@ -21,7 +21,7 @@ import psutil
 START_SERVER_TIMEOUT = 5
 
 
-class NodeProcessManager(object):
+class NodeProcessManager:
     """ Used to manage the execution of Node processes """
     _node_cmd: str = "/usr/bin/node"
 
@@ -30,7 +30,7 @@ class NodeProcessManager(object):
         self._node_cmd = shutil.which('node')  # Try to discover full path of node command
 
     @classmethod
-    async def read_stream(cls, proc, stream, callback) -> None:
+    async def read_stream(cls, proc, stream, callback: Callable[[str], None]) -> None:
         """
         Reads the stout/stderr stream of a given process
         :param proc: the process to read the output from
@@ -47,7 +47,7 @@ class NodeProcessManager(object):
     @contextlib.asynccontextmanager
     async def open_process(self, cmd: str, *cmd_args: dict[str, str], work_dir: str = None,
                            env_vars: dict[str, str] = None, daemon: bool = False,
-                           stdout_callback=print) -> None:
+                           stdout_callback: Callable[[str], None] = print) -> None:
         """
         Creates a new Node process
 
@@ -91,7 +91,7 @@ class NodeProcessManager(object):
                     pass
 
     async def execute(self, js_file: str = None, port: int = None,
-                      stdout_callback=partial(print, flush=True)) -> None:
+                      stdout_callback: Callable[[str], None] = partial(print, flush=True)) -> None:
         """
         Use Node.js to run the provided script. If a port is given,
         the script will be run as a daemon

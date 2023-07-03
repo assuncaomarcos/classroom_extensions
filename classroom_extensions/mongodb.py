@@ -38,7 +38,7 @@ def mongosh_args(f):
     return f
 
 
-class MongoDBConfig(object):
+class MongoDBConfig:
     """ To keep the configuration on how to connect to MongoDB """
 
     def __init__(self, config_file: str = "mongodb_extension.json"):
