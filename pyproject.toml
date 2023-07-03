@@ -40,8 +40,11 @@ classifiers = [
     "Framework :: IPython",
     "Framework :: Jupyter :: JupyterLab :: Extensions"
 ]
-version = "0.0.1"
+dynamic = ["version"]
 dependencies = ["ipython", "psutil>=5.9.5", "plantweb" ]
+
+[tool.setuptools.dynamic]
+version = {attr = "classroom_extensions.__version__"}
 
 [project.optional-dependencies]
 dev = ["ipython", "jupyter", "mariadb>=1.0.11", "mariadb-kernel==0.2.0", "sqlparse"]
