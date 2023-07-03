@@ -34,7 +34,7 @@ jobs:
         run: docker-compose -f "docker-compose.yml" down
 
   build:
-    name: Build wheels on ${{ matrix.os }}
+    name: Build wheels
     runs-on: ubuntu-latest
 
     steps:
