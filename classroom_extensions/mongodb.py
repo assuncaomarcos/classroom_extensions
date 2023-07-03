@@ -8,7 +8,6 @@ from IPython.core.magics.script import ScriptMagics
 from IPython.core import magic_arguments
 from IPython.utils.process import arg_split
 from argparse import Namespace
-from typing import Any
 from os import environ, path
 import json
 import shutil
@@ -43,7 +42,7 @@ class MongoDBConfig:
 
     def __init__(self, config_file: str = "mongodb_extension.json"):
         self._config_file = config_file
-        self._config: dict[str, Any] = {
+        self._config = {
             'host': 'localhost',
             'port': 27017,
             'username': None,
@@ -55,7 +54,7 @@ class MongoDBConfig:
         }
         self._load_config()
 
-    def update_config(self, config: dict[str, Any] = None) -> None:
+    def update_config(self, config: dict = None) -> None:
         """
         Updates the configuration with the
         values in the provided dictionary
@@ -86,7 +85,7 @@ class MongoDBConfig:
         with open(config_path, 'w', encoding="utf-8") as fd:
             fd.write(json.dumps(self._config))
 
-    def get_shell_args(self, args: dict[str, Any] = None) -> str:
+    def get_shell_args(self, args: dict = None) -> str:
         """ Returns a list of arguments a mongosh command line """
         command = ""
         arg_list = args if args else self._config

@@ -7,7 +7,7 @@ from IPython.core.getipython import get_ipython
 from IPython.display import display, Javascript
 from argparse import ArgumentParser
 from functools import partial
-from typing import Any, Callable
+from typing import Any, Callable, AnyStr
 from os import path, environ
 import asyncio
 import contextlib
@@ -30,7 +30,7 @@ class NodeProcessManager:
         self._node_cmd = shutil.which('node')  # Try to discover full path of node command
 
     @classmethod
-    async def read_stream(cls, proc, stream, callback: Callable[[str], None]) -> None:
+    async def read_stream(cls, proc, stream, callback) -> None:
         """
         Reads the stout/stderr stream of a given process
         :param proc: the process to read the output from
@@ -45,9 +45,9 @@ class NodeProcessManager:
             callback(data.decode().rstrip())
 
     @contextlib.asynccontextmanager
-    async def open_process(self, cmd: str, *cmd_args: dict[str, str], work_dir: str = None,
-                           env_vars: dict[str, str] = None, daemon: bool = False,
-                           stdout_callback: Callable[[str], None] = print) -> None:
+    async def open_process(self, cmd: str, *cmd_args: dict, work_dir: str = None,
+                           env_vars: dict = None, daemon: bool = False,
+                           stdout_callback=print) -> None:
         """
         Creates a new Node process
 
@@ -91,7 +91,7 @@ class NodeProcessManager:
                     pass
 
     async def execute(self, js_file: str = None, port: int = None,
-                      stdout_callback: Callable[[str], None] = partial(print, flush=True)) -> None:
+                      stdout_callback=partial(print, flush=True)) -> None:
         """
         Use Node.js to run the provided script. If a port is given,
         the script will be run as a daemon
