@@ -8,14 +8,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       - name: Install MariaDB client tools
         uses: ./.github/actions/mariadb_client.yml
 
       - name: Install MongoDB Shell
         uses: ./.github/actions/mongosh.yml
-
-      - name: Checkout repository
-        uses: actions/checkout@v3
 
       - name: Start containers
         run: docker-compose -f "docker-compose.yml" up -d --build
