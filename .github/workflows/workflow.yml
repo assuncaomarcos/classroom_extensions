@@ -15,7 +15,7 @@ jobs:
       - name: Install MariaDB client
         run: |
               sudo apt-get install wget software-properties-common dirmngr ca-certificates apt-transport-https -y
-              sudo apt install mariadb-client libmariadb3 -y
+              sudo apt install mariadb-client -y
 
       - name: Install MongoDB shell
         run: |
