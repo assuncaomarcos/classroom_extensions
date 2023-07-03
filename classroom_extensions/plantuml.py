@@ -8,7 +8,6 @@ from IPython.core.magics.display import DisplayMagics, display
 from IPython.core.getipython import get_ipython
 from IPython.display import SVG, Image
 from argparse import ArgumentParser
-from typing import Any
 from copy import copy
 from os.path import expanduser, exists
 from plantweb.render import render
@@ -31,7 +30,6 @@ DEFAULT_PLANTWEB_CONFIG = {
 
 @magics_class
 class PlantUmlMagics(DisplayMagics):
-    _plantweb_config: dict[str, Any]
     _config_path: str = expanduser("~/.plantwebrc")
 
     def __init__(self, shell=None):
@@ -42,7 +40,7 @@ class PlantUmlMagics(DisplayMagics):
     def plantweb_config(self):
         return self._plantweb_config
 
-    def _load_plantweb_config(self) -> dict[str, Any]:
+    def _load_plantweb_config(self) -> dict:
         if not exists(self._config_path):
             return copy(DEFAULT_PLANTWEB_CONFIG)
         with open(self._config_path, 'r') as fd:
