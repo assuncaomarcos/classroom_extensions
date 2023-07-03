@@ -25,7 +25,10 @@ jobs:
         run: docker-compose -f "docker-compose.yml" up -d --build
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: | 
+          sudo apt-get update
+          sudo apt-get install python3-zipp
+          pip install -r requirements.txt
 
       - name: Run tests
         run: python3 -m unittest tests/run_tests.py
@@ -51,8 +54,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install python3-zipp
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
