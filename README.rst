@@ -18,7 +18,7 @@ You can use `pip` to install the extensions:
 
 .. code-block::
 
-    pip3 install classroom_extensions
+    pip3 install classroom-extensions
 
 or:
 
@@ -72,7 +72,7 @@ class, activity, and more.
 MongoDB Shell Magics
 --------------------
 
-The IPython extension "%%mongo" enables seamless interaction with MongoDB using
+The IPython extension `%%mongo` enables seamless interaction with MongoDB using
 the `mongosh` CLI. By simply prefixing a cell with `%%mongo`, users can execute queries
 and commands against a MongoDB database directly within their IPython environment
 or Colab. The extension leverages the power of the `mongosh` CLI to provide a simple
