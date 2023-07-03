@@ -1,5 +1,5 @@
 name: Install MongoDB Shell
-
+shell: bash
 runs:
     steps:
         - name: Install Mongo Repo
