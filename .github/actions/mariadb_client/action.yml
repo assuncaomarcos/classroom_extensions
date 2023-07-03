@@ -1,15 +1,16 @@
 name: Install MariaDB client tools
 
 runs:
-  shell: bash
   using: 'composite'
   steps:
     - name: Purge MariaDB common
+      shell: bash
       run: |
         sudo apt purge mysql-common
         sudo rm -rf /etc/mysql /var/lib/mysql
 
     - name: Install MariaDB Repo
+      shell: bash
       run: |
         sudo apt-get install wget software-properties-common dirmngr ca-certificates apt-transport-https -y
         wget https://r.mariadb.com/downloads/mariadb_repo_setup
@@ -19,4 +20,5 @@ runs:
         sudo apt update
 
     - name: Install MariaDB client tools
+      shell: bash
       run: sudo apt install libmariadb3 libmariadb-dev mariadb-client -y
