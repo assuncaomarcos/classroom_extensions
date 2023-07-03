@@ -1,10 +1,10 @@
 name: Install MongoDB Shell
 
 runs:
-  shell: bash
 
   steps:
     - name: Install Mongo Repo
+      shell: bash
       run: |
         sudo apt update
         wget -qO- https://www.mongodb.org/static/pgp/server-6.0.asc | sudo tee /etc/apt/trusted.gpg.d/server-6.0.asc
@@ -14,4 +14,5 @@ runs:
 
 
     - name: Install MongoDB Shell
+      shell: bash
       run: sudo apt install -y mongodb-mongosh
