@@ -29,7 +29,7 @@ jobs:
       - name: Stop containers
         run: docker-compose -f "docker-compose.yml" down
 
-  build_wheels:
+  build:
     name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -61,7 +61,7 @@ jobs:
           path: dist/*.whl
 
   upload_pypi:
-    needs: [test, build_wheels, build_sdist]
+    needs: [test, build]
     runs-on: ubuntu-latest
     # upload to PyPI on every tag starting with 'v'
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
