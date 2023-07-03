@@ -28,11 +28,11 @@ class TestNodeJs(BaseTestCase):
             where_ls += data
 
         async def run_cmd():
-            async with proc_manager.open_process('which', 'ls', stdout_callback=stdout_callback):
+            async with proc_manager.open_process('which', 'uname', stdout_callback=stdout_callback):
                 pass
 
         asyncio.run(run_cmd())
-        self.assertRegex(text=where_ls, expected_regex=r".*/ls")
+        self.assertRegex(text=where_ls, expected_regex=r"uname")
 
     def test_node_script(self):
         print("Test executing Node.js script.")
