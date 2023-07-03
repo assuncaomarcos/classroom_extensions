@@ -4,39 +4,16 @@ on: [push]
 
 jobs:
 
-  dbtools:
-    name: Install DB tools on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ ubuntu-20.04, ubuntu-22.04 ]
-
-    steps:
-      - name: Install MariaDB client
-        run: |
-              sudo apt purge mysql-common
-              sudo rm -rf /etc/mysql /var/lib/mysql
-              sudo apt-get install wget software-properties-common dirmngr ca-certificates apt-transport-https -y
-              wget https://r.mariadb.com/downloads/mariadb_repo_setup
-              echo "3a562a8861fc6362229314772c33c289d9096bafb0865ba4ea108847b78768d2  mariadb_repo_setup" | sha256sum -c -
-              chmod +x mariadb_repo_setup
-              sudo ./mariadb_repo_setup --mariadb-server-version="mariadb-10.6"
-              sudo apt install libmariadb3 libmariadb-dev mariadb-client -y
-
-      - name: Install MongoDB shell
-        run: |
-              sudo apt update
-              wget -qO- https://www.mongodb.org/static/pgp/server-6.0.asc | sudo tee /etc/apt/trusted.gpg.d/server-6.0.asc
-              sudo apt-get install gnupg
-              echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
-              sudo apt update
-              sudo apt install -y mongodb-mongosh
-
   test:
     runs-on: ubuntu-latest
-    needs: [dbtools]
 
     steps:
+      - name: Install MariaDB client tools
+        uses: ./.github/actions/mariadb_client.yml
+
+      - name: Install MongoDB Shell
+        uses: ./.github/actions/mongosh.yml
+
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -54,7 +31,6 @@ jobs:
 
   build_wheels:
     name: Build wheels on ${{ matrix.os }}
-    needs: [dbtools]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -66,6 +42,12 @@ jobs:
 
       # Used to host cibuildwheel
       - uses: actions/setup-python@v2
+
+      - name: Install MariaDB client tools
+        uses: ./.github/actions/mariadb_client.yml
+
+      - name: Install MongoDB Shell
+        uses: ./.github/actions/mongosh.yml
 
       - name: Install dependencies
         run: pip install -r requirements.txt
