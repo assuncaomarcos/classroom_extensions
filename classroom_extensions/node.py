@@ -7,7 +7,7 @@ from IPython.core.getipython import get_ipython
 from IPython.display import display, Javascript
 from argparse import ArgumentParser
 from functools import partial
-from typing import Any, Callable, AnyStr
+from typing import Any
 from os import path, environ
 import asyncio
 import contextlib
@@ -87,7 +87,7 @@ class NodeProcessManager:
             else:
                 try:
                     await asyncio.wait_for(server_wait(), START_SERVER_TIMEOUT)
-                except asyncio.exceptions.TimeoutError:
+                except asyncio.TimeoutError:
                     pass
 
     async def execute(self, js_file: str = None, port: int = None,
