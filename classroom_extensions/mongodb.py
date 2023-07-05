@@ -59,7 +59,7 @@ class MongoDBConfig:
         Updates the configuration with the
         values in the provided dictionary
 
-        :param config a dictionary of configuration parameters
+        :param: config a dictionary of configuration parameters
         """
         self._config.update(config)
 
@@ -137,9 +137,9 @@ class MongoDBMagics(DisplayMagics):
         config = self._config.copy()
         config.update_config(vars(args))
 
-        # The flow here is not sophisticated. We simply leverate the
+        # The flow here is not sophisticated. We simply leverage the
         # ScriptMagics' script that creates a process, writes the cell
-        # contents to its stdin and creates streams that read from
+        # contents to its stdin and creates stream readers that read from
         # stdout and stderr to render the execution results
         try:
             params = f"--quiet --no-raise-error {config.get_shell_args()}"
@@ -166,6 +166,7 @@ class MongoDBMagics(DisplayMagics):
         argv = arg_split(line, posix=not sys.platform.startswith("win"))
         args = self.mongo_config.parser.parse_args(argv)
         self._set_config(args)
+        self._config.save()
 
 
 def load_ipython_extension(ipython):

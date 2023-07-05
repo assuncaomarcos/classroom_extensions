@@ -52,6 +52,6 @@ test = ["pytest", "coverage"]
 
 [project.urls]
 "Homepage" = "https://github.com/assuncaomarcos/classroom_extensions"
-"Bug Reports" = "https://github.com/assuncaomarcos/daggen/classroom_extensions"
+"Bug Reports" = "https://github.com/assuncaomarcos/classroom_extensions"
 "Say Thanks!" = "https://saythanks.io/to/assuncaomarcos"
 "Source" = "https://github.com/assuncaomarcos/classroom_extensions"
