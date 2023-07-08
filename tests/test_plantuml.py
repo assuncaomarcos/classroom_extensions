@@ -1,24 +1,30 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+""" Tests the PlantUML magics """
 
 import unittest
+from classroom_extensions.plantuml import PlantUmlMagics
 from .base import BaseTestCase
 
 
 class TestPlantUML(BaseTestCase):
-    """ Testcase for the PlantUML extension """
+    """Testcase for the PlantUML extension"""
 
     def test_config(self):
+        """ Tests creating a config file """
         print("Testing PlantUML config...")
-        from classroom_extensions.plantuml import PlantUmlMagics
         magics1 = PlantUmlMagics(shell=self.ipython)
-        previous_server = magics1.plantweb_config['server']
+        previous_server = magics1.plantweb_config["server"]
         magics1.plantuml_config("--server=http://localhost:8080/plantuml/")
         magics2 = PlantUmlMagics(shell=self.ipython)
-        self.assertEqual("http://localhost:8080/plantuml/", magics2.plantweb_config['server'])
+        self.assertEqual(
+            "http://localhost:8080/plantuml/", magics2.plantweb_config["server"]
+        )
         magics2.plantuml_config(f"--server={previous_server}")
 
     def test_render(self):
+        """ Tests rendering a graph """
         print("Testing PlantUML rendering...")
-        from classroom_extensions.plantuml import PlantUmlMagics
         content = """
         actor Foo1
         boundary Foo2
@@ -34,13 +40,18 @@ class TestPlantUML(BaseTestCase):
         magics.plantuml(cell=content)
 
     def test_load_extension(self):
+        """ Tests loading and unloading the extension """
         print("Testing loading/unloading extension...")
-        self.ipython.extension_manager.load_extension('classroom_extensions.plantuml')
-        second_load = self.ipython.extension_manager.load_extension('classroom_extensions.plantuml')
+        self.ipython.extension_manager.load_extension("classroom_extensions.plantuml")
+        second_load = self.ipython.extension_manager.load_extension(
+            "classroom_extensions.plantuml"
+        )
         self.assertEqual(second_load, "already loaded")
-        unload = self.ipython.extension_manager.unload_extension('classroom_extensions.plantuml')
+        unload = self.ipython.extension_manager.unload_extension(
+            "classroom_extensions.plantuml"
+        )
         self.assertEqual(unload, "no unload function")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

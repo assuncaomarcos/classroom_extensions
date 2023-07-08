@@ -9,9 +9,8 @@ an extension does not limit the notebook to executing only SQL commands. This as
 Note: MariaDB server and client installed, and that you have created a MariaDB kernel
 configuration file before loading this extension.
 """
-from IPython.core.magic import (magics_class, cell_magic)
+from IPython.core.magic import magics_class, cell_magic
 from IPython.core.magics.display import DisplayMagics
-from IPython.core.getipython import get_ipython
 from IPython.display import display, HTML
 from mariadb_kernel.code_parser import CodeParser
 from mariadb_kernel.mariadb_client import MariaDBClient, ServerIsDownError
@@ -20,12 +19,15 @@ from mariadb_kernel.client_config import ClientConfig
 
 @magics_class
 class MariaDBMagics(DisplayMagics):
+    """Implements the MariaDB magics using the database
+    client provided by the MariaDB kernel"""
+
     db_client: MariaDBClient
     in_notebook: bool
 
     def __init__(self, shell):
         super().__init__(shell=shell)
-        self.in_notebook = shell.has_trait('kernel')
+        self.in_notebook = shell.has_trait("kernel")
         self.log = shell.log
         config = ClientConfig(self.log)
         self.db_client = MariaDBClient(self.log, config)
@@ -35,19 +37,22 @@ class MariaDBMagics(DisplayMagics):
         self.db_client.stop()
 
     @cell_magic
-    def sql(self, line='', cell=None):
+    def sql(self, line="", cell=None) -> None:
         """
         Code to intercept the SQL code and execute it using MariaDB iPython kernel.
 
-        :param line not used, included to avoid error
-        :param cell: The contents of the cell to execute
-        :return: None
+        Args:
+            line: (str) Not used, included to avoid error
+            cell: (str) The contents of the cell to execute
+
+        Returns:
+            None
         """
         parser: CodeParser
         try:
             parser = CodeParser(self.log, cell, ";")
-        except ValueError as e:
-            self.log.error(f"Error with SQL parser: {str(e)}")
+        except ValueError as value_error:
+            self.log.error(f"Error with SQL parser: {str(value_error)}")
             return
 
         result = ""
@@ -65,17 +70,16 @@ class MariaDBMagics(DisplayMagics):
 def load_ipython_extension(ipython):
     """
     Loads the ipython extension
-    :param ipython: The currently active `InteractiveShell` instance.
-    :return: None
+
+    Args:
+        ipython: (InteractiveShell) The currently active `InteractiveShell` instance.
+
+    Returns:
+        None
     """
     try:
         ipython.register_magics(MariaDBMagics(ipython))
-    except ServerIsDownError as se:
-        ipython.log.error(f"Error trying to access MariaDB Server: {se}")
-    except NameError as ne:
-        ipython.log.error(f"Error registering the magic command: {ne}")
-
-
-# Check if the module has not been loaded with %load_ext
-if '__IPYTHON__' not in globals():
-    load_ipython_extension(get_ipython())
+    except ServerIsDownError as server_error:
+        ipython.log.error(f"Error trying to access MariaDB Server: {server_error}")
+    except NameError as name_error:
+        ipython.log.error(f"Error registering the magic command: {name_error}")

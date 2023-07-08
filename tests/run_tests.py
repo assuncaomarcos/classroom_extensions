@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+""" Launches all tests """
 
-import unittest
 from IPython.testing.globalipapp import start_ipython
 
 # To make sure IPython is available for all tests
@@ -21,4 +21,3 @@ from .test_nodejs import TestNodeJs
 
 # test_runner = unittest.TextTestRunner()
 # test_runner.run(test_suite)
-

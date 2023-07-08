@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+""" Base functionality for all tests """
 
+from typing import Any
+import logging
 import unittest
 from IPython.testing.globalipapp import get_ipython
 from IPython.core.displaypub import DisplayPublisher
-from typing import Any
-import logging
 
 
 class BaseTestCase(unittest.TestCase):
-    """ Base testcase for all tests """
+    """Base testcase for all tests"""
+
     ipython = None
     publisher = None
     previous_pub = None
@@ -43,16 +45,30 @@ class CaptureDisplayPub(DisplayPublisher):
     display() by the extensions.
     """
 
+    _display_output: list[dict[str, Any]] = []
+    """ The data published by the magic whose output is to be captured """
+
     def __init__(self, shell=None):
         super().__init__(shell=shell)
-        self._display_output: list[dict[str, Any]] = []
 
-    def publish(self, data, **kwargs):
+    def publish(
+        self,
+        data,
+        metadata=None,
+        source=None,
+        *,
+        transient=None,
+        update=False,
+        **kwargs,
+    ):
+        """Publish data and metadata to all frontends."""
         self._display_output.append(data)
 
     def delete_output(self):
+        """Clear the published data"""
         self._display_output.clear()
 
     @property
     def display_output(self):
+        """Get the published data"""
         return self._display_output

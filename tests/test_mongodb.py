@@ -1,24 +1,28 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+""" Tests the MongoDB magics """
 
-from classroom_extensions.mongodb import MongoDBConfig
-from IPython.utils import io
-from .base import BaseTestCase
 import unittest
 import os
 import uuid
-
+from IPython.utils import io
+from classroom_extensions.mongodb import MongoDBConfig
+from .base import BaseTestCase
 
 MONGO_USERNAME = "admin"
 MONGO_PASSWORD = "password"
 MONGO_DATABASE = "testdb"
 
-PARAM_LINE = f"--host=localhost --port=27017 " \
-             f"--username={MONGO_USERNAME} " \
-             f"--password={MONGO_PASSWORD}"
+PARAM_LINE = (
+    f"--host=localhost --port=27017 "
+    f"--username={MONGO_USERNAME} "
+    f"--password={MONGO_PASSWORD}"
+)
+
 
 class TestMongoDB(BaseTestCase):
-    """ Testcase for the MongoDB extension """
+    """Testcase for the MongoDB extension"""
+
     config_file = None
 
     @classmethod
@@ -28,13 +32,13 @@ class TestMongoDB(BaseTestCase):
 
     def setUp(self) -> None:
         # Load the extension
-        self.ipython.extension_manager.load_extension('classroom_extensions.mongodb')
+        self.ipython.extension_manager.load_extension("classroom_extensions.mongodb")
 
         # Custom path to config files
-        self.ipython.run_line_magic('env', f"JUPYTER_CONFIG_DIR /tmp")
+        self.ipython.run_line_magic("env", "JUPYTER_CONFIG_DIR /tmp")
 
     def tearDown(self):
-        self.ipython.extension_manager.unload_extension('classroom_extensions.mongodb')
+        self.ipython.extension_manager.unload_extension("classroom_extensions.mongodb")
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -42,6 +46,7 @@ class TestMongoDB(BaseTestCase):
         os.unlink(os.path.join("/tmp", cls.config_file))
 
     def test_new_config(self):
+        """Tests creating a new config file"""
         print("Testing new config...")
         config = MongoDBConfig(config_file=self.config_file)
         config.save()
@@ -49,12 +54,12 @@ class TestMongoDB(BaseTestCase):
         self.assertEqual(expected, config.get_shell_args())
 
     def test_config_magic(self):
+        """Tests the mongo_config line magic"""
         print("Testing mongo_config magic")
-        self.ipython.run_line_magic(
-            "mongo_config", line=PARAM_LINE
-        )
+        self.ipython.run_line_magic("mongo_config", line=PARAM_LINE)
 
     def test_cell_magic(self):
+        """Tests executing the mongo cell magic"""
         print("Testing mogo magic")
         js_code = """show dbs;
         use testdb;
@@ -67,5 +72,5 @@ class TestMongoDB(BaseTestCase):
         self.assertRegex(cell_output.strip(), r"testdb>")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from IPython.core.magic import (magics_class, cell_magic)
-from IPython.core.magics.display import DisplayMagics
-from IPython.core.getipython import get_ipython
-from IPython.display import display, HTML
+""" IPython magics to make the result section of
+a cell mimic the browser's console """
+
 from argparse import ArgumentParser
+from IPython.core.magic import magics_class, cell_magic
+from IPython.core.magics.display import DisplayMagics
+from IPython.display import display, HTML
 from .node import JavascriptWithConsole
 
 
-_console_title = """
+_CONSOLE_TITLE = """
 var console_elems = {}
 console_elems.stl = document.createElement('style');
 console_elems.stl.textContent = `
@@ -42,45 +44,69 @@ class HTMLWithConsole(HTML):
     """
 
     def __init__(self, data=None, console=False):
+        """
+        Creates a new object representing the HTML code to be rendered.
+        Args:
+            data: (str) the HTML content
+            console: (bool) True if the browser console must be displayed
+        """
         super().__init__(data=data)
         self.console = console
 
-    def _repr_html_(self):
+    def _repr_html_(self) -> str:
+        """
+        Creates the HTML content.
+
+        Returns:
+            The HTML code to be rendered.
+        """
         html: str = ""
         if self.console:
-            html += f"<script>{_console_title}{JavascriptWithConsole.CELL_CONSOLE}</script>"
+            html += (
+                f"<script>{_CONSOLE_TITLE}{JavascriptWithConsole.CELL_CONSOLE}</script>"
+            )
         return html + super()._repr_html_()
 
 
 @magics_class
 class HTMLMagics(DisplayMagics):
+    """Provides the html magics"""
+
     _arg_parser: ArgumentParser
     _in_notebook: bool
 
     def __init__(self, shell):
         super().__init__(shell=shell)
         self._arg_parser = self._create_parser()
-        self._in_notebook = shell.has_trait('kernel')
+        self._in_notebook = shell.has_trait("kernel")
 
     @classmethod
     def _create_parser(cls) -> ArgumentParser:
         parser = ArgumentParser()
-        parser.add_argument("-c", "--console", action='store_true',
-                            help="Whether to display a copy of the browser's console or not")
+        parser.add_argument(
+            "-c",
+            "--console",
+            action="store_true",
+            help="Whether to display a copy of the browser's console or not",
+        )
         return parser
 
     @cell_magic
-    def html(self, line=None, cell=None):
+    def html(self, line=None, cell=None) -> None:
         args = self._arg_parser.parse_args(line.split() if line else "")
         html = HTMLWithConsole(cell, args.console)
         display(html)
 
 
-def load_ipython_extension(ipython):
+def load_ipython_extension(ipython) -> None:
     """
-    Loads the ipython extension
-    :param ipython: The currently active `InteractiveShell` instance.
-    :return: None
+     Loads the ipython extension
+
+    Args:
+        ipython: The currently active `InteractiveShell` instance.
+
+    Returns:
+        None
     """
     try:
         html_magic = HTMLMagics(ipython)
@@ -90,18 +116,16 @@ def load_ipython_extension(ipython):
         print("IPython shell not available.")
 
 
-def unload_ipython_extension(ipython):
-    """ To unload the extension """
+def unload_ipython_extension(ipython) -> None:
+    """
+    To unload the extension
+    Args:
+        ipython: the current interactive shell
+
+    Returns:
+        None
+    """
     try:
         del ipython.html_magic
-    except NameError:
-        print("IPython shell not available.")
-
-
-# Check if the module has not been loaded with %load_ext
-if '__IPYTHON__' not in globals():
-    try:
-        shell = get_ipython()
-        load_ipython_extension(shell)
     except NameError:
         print("IPython shell not available.")
