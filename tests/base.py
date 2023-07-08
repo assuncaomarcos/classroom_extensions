@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """ Base functionality for all tests """
 
-from typing import Any
+from typing import Any, Dict, List
 import logging
 import unittest
 from IPython.testing.globalipapp import get_ipython
@@ -45,7 +45,7 @@ class CaptureDisplayPub(DisplayPublisher):
     display() by the extensions.
     """
 
-    _display_output: list[dict[str, Any]] = []
+    _display_output: List[Dict[str, Any]] = []
     """ The data published by the magic whose output is to be captured """
 
     def __init__(self, shell=None):
