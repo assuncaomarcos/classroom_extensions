@@ -37,13 +37,13 @@ class MariaDBMagics(DisplayMagics):
         self.db_client.stop()
 
     @cell_magic
-    def sql(self, line="", cell=None) -> None:
+    def sql(self, line: str = "", cell: str = None) -> None:
         """
         Code to intercept the SQL code and execute it using MariaDB iPython kernel.
 
         Args:
-            line: (str) Not used, included to avoid error
-            cell: (str) The contents of the cell to execute
+            line: Not used, included to avoid error
+            cell: The contents of the cell to execute
 
         Returns:
             None

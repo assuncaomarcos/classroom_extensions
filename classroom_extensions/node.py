@@ -9,8 +9,9 @@ mimics the browser's console
 
 from argparse import ArgumentParser
 from functools import partial
-from typing import Any
+from typing import Any, Callable, AnyStr
 from os import path, environ
+from asyncio import streams
 import asyncio
 import contextlib
 import io
@@ -38,14 +39,19 @@ class NodeProcessManager:
         )  # Try to discover full path of node command
 
     @classmethod
-    async def read_stream(cls, proc, stream, callback) -> None:
+    async def read_stream(
+        cls,
+        proc,
+        stream: streams.StreamReader,
+        callback: Callable[[AnyStr], None],
+    ) -> None:
         """
         Reads the stout/stderr stream of a given process
 
         Args:
             proc: the process to read the output from
-            stream: (stdout) the stream to read from
-            callback: (Callable) the callback function to call when data is read
+            stream: the stream to read from
+            callback: the callback function to call when data is read
 
         Returns:
             None
@@ -64,18 +70,18 @@ class NodeProcessManager:
         work_dir: str = None,
         env_vars: dict = None,
         daemon: bool = False,
-        stdout_callback=print,
+        stdout_callback: Callable[[AnyStr], None] = print,
     ) -> None:
         """
         Creates a new Node process
 
         Args:
-            cmd: (str) the command to execute
-            *cmd_args: (*dict) the command arguments
-            work_dir: (str) the path to the working directory
-            env_vars: (dict) the environment variables to set
-            daemon: (bool) True if the process will run in background
-            stdout_callback: (Callable) the callback function to call when reading the output stream
+            cmd: the command to execute
+            *cmd_args: the command arguments
+            work_dir: the path to the working directory
+            env_vars: the environment variables to set
+            daemon: True if the process will run in background
+            stdout_callback: the callback function to call when reading the output stream
 
         Returns:
             None
@@ -94,7 +100,7 @@ class NodeProcessManager:
         )
 
         async def server_wait() -> None:
-            """ Shields the execution and stream reader tasks for a background process """
+            """Shields the execution and stream reader tasks for a background process"""
             server_task = asyncio.create_task(proc.wait())
             try:
                 await asyncio.shield(server_task)
@@ -118,16 +124,16 @@ class NodeProcessManager:
         self,
         js_file: str = None,
         port: int = None,
-        stdout_callback=partial(print, flush=True),
+        stdout_callback: Callable[[AnyStr], None] = partial(print, flush=True),
     ) -> None:
         """
         Use Node.js to run the provided script. If a port is given,
         the script will be run in background without blocking the cell
 
         Args:
-            js_file: (str) the full path to the JavaScript file
-            port: (int) the port number for the server
-            stdout_callback: (Callable) the callback function to call when reading the output stream
+            js_file: the full path to the JavaScript file
+            port: the port number for the server
+            stdout_callback: the callback function to call when reading the output stream
 
         Returns:
             None
@@ -151,7 +157,7 @@ class NodeProcessManager:
                 self._daemons[port] = proc
 
     @classmethod
-    def _force_kill(cls, port) -> None:
+    def _force_kill(cls, port: int) -> None:
         """To kill a Node.js process listening on a given port"""
         for proc in psutil.process_iter(["pid", "name", "connections"]):
             try:
@@ -166,12 +172,12 @@ class NodeProcessManager:
             except (psutil.AccessDenied, psutil.NoSuchProcess):
                 pass
 
-    def kill_daemon(self, port) -> None:
+    def kill_daemon(self, port: int) -> None:
         """
         Kills a previously started background process
 
         Args:
-            port: (int) the port the daemon is likely listening to
+            port: the port the daemon is likely listening to
 
         Returns:
             None
@@ -302,7 +308,7 @@ class JavascriptWithConsole(Javascript):
         super().__init__(*args, **kwargs)
 
     def _repr_javascript_(self):
-        """ Creates the full JavaScript code to be delivered to the browser """
+        """Creates the full JavaScript code to be delivered to the browser"""
         return self.CELL_CONSOLE + super()._repr_javascript_()
 
 
@@ -325,7 +331,7 @@ class NodeMagics(DisplayMagics):
 
     @classmethod
     def _create_parser(cls) -> ArgumentParser:
-        """ Creates a parser to the line arguments """
+        """Creates a parser to the line arguments"""
         parser = ArgumentParser()
         parser.add_argument(
             "-t",
@@ -355,8 +361,8 @@ class NodeMagics(DisplayMagics):
         Creates the JavaScript file for Node to run
 
         Args:
-            filename: (str) the file name
-            cell_content: (str) the cell contents to save into the file
+            filename: the file name
+            cell_content: the cell contents to save into the file
 
         Returns:
             Name of the file created
@@ -372,8 +378,8 @@ class NodeMagics(DisplayMagics):
         Triggers the execution on Node.js
 
         Args:
-            js_file: (str) path to the file to execute
-            port: (int) the port number to use, if the scripts launches a server
+            js_file: path to the file to execute
+            port: the port number to use, if the scripts launches a server
 
         Returns:
             None
@@ -385,12 +391,12 @@ class NodeMagics(DisplayMagics):
             asyncio.run(self._proc_mgmt.execute(js_file, port))
 
     @cell_magic
-    def javascript(self, line=None, cell=None) -> None:
+    def javascript(self, line: str = None, cell: str = None) -> None:
         """
         Method called when executing %%javascript
         Args:
-            line: (str) line arguments (e.g. --target, --filename)
-            cell: (str) the JavaScript code to execute
+            line: line arguments (e.g. --target, --filename)
+            cell: the JavaScript code to execute
 
         Returns:
             None
@@ -429,5 +435,5 @@ def load_ipython_extension(ipython):
 
 
 def unload_ipython_extension(ipython):
-    """ Unloads the extension """
+    """Unloads the extension"""
     del ipython.node_magic

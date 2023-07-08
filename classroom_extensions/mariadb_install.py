@@ -68,7 +68,7 @@ class MariaDBInstaller(Magics):
 
     @classmethod
     def _start_mariadb(cls) -> None:
-        """Start MariaDB"""
+        """Starts MariaDB"""
 
         get_ipython().system_raw("service mysql start &")
         print("Waiting for a few seconds for MariaDB server to start...")

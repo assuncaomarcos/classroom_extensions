@@ -54,7 +54,7 @@ class PlantUmlMagics(DisplayMagics):
             config_file.write(json.dumps(self._plantweb_config))
 
     @cell_magic
-    def plantuml(self, line=None, cell=None):
+    def plantuml(self, line: str = None, cell: str = None):
         """Cell magic responsible for rendering the SVG/PNG diagram"""
         output, out_format, _, _ = render(cell, engine="plantuml", format="svg")
         if out_format == "svg":
@@ -65,7 +65,7 @@ class PlantUmlMagics(DisplayMagics):
             display(img)
 
     @line_magic
-    def plantuml_config(self, line=None):
+    def plantuml_config(self, line=None) -> None:
         """Used to set the server address in case one wants to use its local PlatUML server"""
         parser = ArgumentParser()
         parser.add_argument(

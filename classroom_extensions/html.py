@@ -5,6 +5,7 @@
 a cell mimic the browser's console """
 
 from argparse import ArgumentParser
+from typing import AnyStr
 from IPython.core.magic import magics_class, cell_magic
 from IPython.core.magics.display import DisplayMagics
 from IPython.display import display, HTML
@@ -43,12 +44,13 @@ class HTMLWithConsole(HTML):
     triggered when loading/executing the HTML/JavaScript code.
     """
 
-    def __init__(self, data=None, console=False):
+    def __init__(self, data: AnyStr = None, console: bool = False):
         """
         Creates a new object representing the HTML code to be rendered.
+
         Args:
-            data: (str) the HTML content
-            console: (bool) True if the browser console must be displayed
+            data: the HTML content
+            console: True if the browser console must be displayed
         """
         super().__init__(data=data)
         self.console = console
@@ -103,7 +105,7 @@ def load_ipython_extension(ipython) -> None:
      Loads the ipython extension
 
     Args:
-        ipython: The currently active `InteractiveShell` instance.
+        ipython (InteractiveShell): Currently active `InteractiveShell` instance.
 
     Returns:
         None
@@ -119,8 +121,9 @@ def load_ipython_extension(ipython) -> None:
 def unload_ipython_extension(ipython) -> None:
     """
     To unload the extension
+
     Args:
-        ipython: the current interactive shell
+        ipython (InteractiveShell): Currently active `InteractiveShell` instance.
 
     Returns:
         None

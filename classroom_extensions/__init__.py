@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+    Set of IPython extensions used for teaching at ETS Montreal.
+"""
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 
 __all__ = [
     "mariadb",

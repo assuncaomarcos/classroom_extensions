@@ -70,11 +70,15 @@ class MongoDBConfig:
         Updates the configuration with the
         values in the provided dictionary
 
-        :param: config a dictionary of configuration parameters
+        Args:
+            config: a dictionary with configuration parameters
+
+        Returns:
+            None
         """
         self._config.update(config)
 
-    def _load_config(self):
+    def _load_config(self) -> None:
         config_path = self._config_path()
         if path.exists(config_path):
             with open(config_path, "r", encoding="utf-8") as config_file:
@@ -83,7 +87,8 @@ class MongoDBConfig:
                 except json.JSONDecodeError as json_error:
                     print(f"Error reading MongoDB config: {json_error}")
 
-    def _config_path(self):
+    def _config_path(self) -> str:
+        """Gets the path to the configuration file"""
         default_dir = path.join(path.expanduser("~"), ".jupyter")
         custom_dir = environ.get("JUPYTER_CONFIG_DIR")
         if custom_dir:
@@ -101,10 +106,10 @@ class MongoDBConfig:
         Returns a list of arguments a mongosh command line
 
         Args:
-            args: (dict) a dictionary with the mongosh command line arguments
+            args: a dictionary with the mongosh command line arguments
 
         Returns:
-            A string containing the command line arguments for mongosh
+            The command line for mongosh
         """
         command = ""
         arg_list = args if args else self._config
@@ -121,8 +126,9 @@ class MongoDBConfig:
     def copy(self):
         """
         Creates a shallow copy of the configuration object
+
         Returns:
-            a shallow copy of the object
+            A shallow copy of the object
         """
         clone = MongoDBConfig(self._config_file)
         clone.update_config(self._config)
@@ -153,12 +159,12 @@ class MongoDBMagics(DisplayMagics):
     @magic_arguments.magic_arguments()
     @mongosh_args
     @cell_magic("mongo")
-    def mongo(self, line="", cell=None) -> None:
+    def mongo(self, line: str = "", cell: str = None) -> None:
         """
         Implements the %%mongo cell magic
         Args:
-            line: (str) the line after the magic, containing command line arguments to mongosh
-            cell: (str) the cell contents with MongoDB Shell commands
+            line: the line after the magic, containing command line arguments to mongosh
+            cell: the cell contents with MongoDB Shell commands
 
         Returns:
             None
@@ -191,11 +197,12 @@ class MongoDBMagics(DisplayMagics):
     @magic_arguments.magic_arguments()
     @mongosh_args
     @line_magic
-    def mongo_config(self, line=None) -> None:
+    def mongo_config(self, line: str = None) -> None:
         """
         Implements the %mongo_config magic
+
         Args:
-            line: (str) the containing the command line arguments to Mongo Shell
+            line: the containing the command line arguments to Mongo Shell
 
         Returns:
             None
