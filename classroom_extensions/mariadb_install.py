@@ -38,8 +38,8 @@ class MariaDBInstaller(Magics):
         self._db_user = get_user()
         self._db_pass = ""
 
-    @classmethod
-    def _create_parser(cls) -> ArgumentParser:
+    @staticmethod
+    def _create_parser() -> ArgumentParser:
         parser = ArgumentParser()
         parser.add_argument(
             "-p",
@@ -52,12 +52,12 @@ class MariaDBInstaller(Magics):
             "-s",
             "--sample_db",
             action="store_true",
-            help="the password for the root user",
+            help="to load the sample database",
         )
         return parser
 
-    @classmethod
-    def _meet_requirements(cls) -> bool:
+    @staticmethod
+    def _meet_requirements() -> bool:
         """
         Check if running on Colab with the right Ubuntu release
 
