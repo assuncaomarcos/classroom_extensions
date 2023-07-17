@@ -114,7 +114,7 @@ def load_ipython_extension(ipython) -> None:
         html_magic = HTMLMagics(ipython)
         ipython.register_magics(html_magic)
         ipython.html_magic = html_magic
-    except NameError:
+    except (NameError, AttributeError):
         print("IPython shell not available.")
 
 
@@ -130,5 +130,5 @@ def unload_ipython_extension(ipython) -> None:
     """
     try:
         del ipython.html_magic
-    except NameError:
+    except (NameError, AttributeError):
         print("IPython shell not available.")

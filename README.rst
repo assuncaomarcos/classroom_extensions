@@ -8,8 +8,8 @@ magics (e.g., `%%sql`) while customizing existing ones (e.g., `%%javascript`)
 to enable lecturers and students to deploy software frameworks quickly and
 provide notes with working examples.
 
-The `notebooks` directory contains a set of Google Colab notebooks demonstrating
-how to use the extensions.
+The `notebooks` directory contains a set of Google Colab examples of how to
+use the IPython extensions.
 
 Installing the Extensions
 -------------------------
@@ -35,15 +35,15 @@ Two extensions are available for MariaDB. One extension (`mariadb`) uses some
 components of the MariaDB Jupyter Kernel and creates a `%%sql` cell magic that enables
 code cells to accept SQL commands that an instance of MariaDB interprets. However,
 unlike the MariaDB Jupyter Kernel, this extension does not change the IPython kernel
-and its magics, enabling one to continue coding in Python, JavaScript, etc. To ease the
-creation of notebooks on Google Colab, a second extension (`mariadb_install`) installs
-MariaDB and the required libraries to run the first extension without worrying
-about setting things up.
+and its magics, hence enabling one to continue coding in Python, JavaScript, etc.
+To ease the creation of notebooks on Google Colab, a second extension (`mariadb_install`)
+installs MariaDB and the required libraries to run the first extension without
+worrying about setting things up.
 
 Server-Side JavaScript
 ----------------------
 
-This extension, called `node,` customizes the `%%javascript` magic to enable
+This extension, called `node`, customizes the `%%javascript` cell magic to enable
 executing JavaScript code on the server or container hosting the Jupyter Notebook or
 on Google Colab. Node.js executes the code provided in a cell whose `--target` argument
 receives the value `node`. It also enables starting long-running Node.js server
@@ -55,18 +55,17 @@ the result section of the code cell.
 Custom HTML Magic
 -----------------
 
-The `html` extension customizes the `%%html` magic. After rendering the HTML
-code inserted in the cell, the extension displays a high-level copy of the
-browser's console. This behavior helps in teaching HTML or JavaScript that writes
-on the console.
+The `html` extension customizes the `%%html` magic. After rendering the HTML code
+inserted in the cell, the extension displays a high-level copy of the browser's
+console. This behavior helps in teaching HTML or JavaScript that writes on the console.
 
 PlantUML Magics
 ---------------
 
-PlantUML is a textual domain-specific language (DSL) used for creating diagrams,
+PlantUML is a textual Domain-Specific Language (DSL) used for creating diagrams,
 primarily focused on software engineering and system design. It allows you to
 express diagrams using a simple and intuitive syntax, which PlantUML transforms into
-various types of visual diagrams, such as UML (Unified Modeling Language), sequence,
+various types of visual diagrams, such as Unified Modeling Language (UML), sequence,
 class, activity, and more.
 
 MongoDB Shell Magics

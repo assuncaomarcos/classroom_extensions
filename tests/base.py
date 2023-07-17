@@ -5,6 +5,8 @@
 from typing import Any, Dict, List
 import logging
 import unittest
+import io
+import sys
 from IPython.testing.globalipapp import get_ipython
 from IPython.core.displaypub import DisplayPublisher
 
@@ -37,6 +39,18 @@ class BaseTestCase(unittest.TestCase):
         print("Cleaning up...")
         cls.publisher = cls.previous_pub
         cls.ipython.log.removeHandler(cls.log_handler)
+
+    @classmethod
+    def capture_output(cls, func, *args) -> str:
+        """
+        Executes a function and captures
+        what it prints to stdout.
+        """
+        with io.StringIO() as captured_output:
+            sys.stdout = captured_output
+            func(*args)
+            sys.stdout = sys.__stdout__
+            return captured_output.getvalue()
 
 
 class CaptureDisplayPub(DisplayPublisher):
