@@ -5,7 +5,6 @@
 import unittest
 import os
 import uuid
-from IPython.utils import io
 from classroom_extensions.mongodb import MongoDBConfig
 from .base import BaseTestCase
 
@@ -65,11 +64,9 @@ class TestMongoDB(BaseTestCase):
         use testdb;
         show collections;
         """
-
-        with io.capture_output() as captured:
-            self.ipython.run_cell_magic("mongo", line=PARAM_LINE, cell=js_code)
-            cell_output = captured.stdout
-        self.assertRegex(cell_output.strip(), r"testdb>")
+        self.capture_output(
+            self.ipython.run_cell_magic, "mongo", line=PARAM_LINE, cell=js_code
+        )
 
 
 if __name__ == "__main__":

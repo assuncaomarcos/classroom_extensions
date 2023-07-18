@@ -41,14 +41,14 @@ class BaseTestCase(unittest.TestCase):
         cls.ipython.log.removeHandler(cls.log_handler)
 
     @classmethod
-    def capture_output(cls, func, *args) -> str:
+    def capture_output(cls, func, *args, **kwargs) -> str:
         """
         Executes a function and captures
         what it prints to stdout.
         """
         with io.StringIO() as captured_output:
             sys.stdout = captured_output
-            func(*args)
+            func(*args, **kwargs)
             sys.stdout = sys.__stdout__
             return captured_output.getvalue()
 
