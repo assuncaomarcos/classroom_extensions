@@ -4,6 +4,7 @@
 
 import unittest
 import asyncio
+from os import path
 from IPython.utils import io
 from classroom_extensions.node import NodeProcessManager
 from classroom_extensions.node import JavascriptWithConsole
@@ -53,6 +54,24 @@ class TestNodeJs(BaseTestCase):
             )
             cell_output = captured.stdout
         self.assertEqual(cell_output.strip(), console_content)
+
+    def test_save_on_disk(self):
+        """Tests saving script to disk"""
+        print("Test on saving a script on disk.")
+        tmp_file = "/tmp/test_disk.js"
+        self.ipython.run_cell_magic(
+                "javascript",
+                line=f"--target=disk --filename={tmp_file}",
+                cell="console.log('------');\n"
+        )
+        self.assertEqual(path.exists(tmp_file), True)
+        try:
+            self.ipython.run_cell_magic(
+                "javascript", line=f"--target=disk",
+                cell="console.log(' ');\n"
+            )
+        except ValueError:
+            pass
 
     def test_node_server(self):
         """Tests the creation of a Node.js server"""

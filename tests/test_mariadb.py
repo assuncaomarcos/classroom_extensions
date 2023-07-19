@@ -5,8 +5,8 @@
 import unittest
 import json
 from os import path
-from .base import BaseTestCase
 import classroom_extensions.mariadb as mariadb_ext
+from .base import BaseTestCase
 
 MARIADB_USER = "testuser"
 MARIADB_PASSWORD = "testpassword"
