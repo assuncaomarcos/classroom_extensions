@@ -16,6 +16,8 @@ from mariadb_kernel.code_parser import CodeParser
 from mariadb_kernel.mariadb_client import MariaDBClient, ServerIsDownError
 from mariadb_kernel.client_config import ClientConfig
 
+__all__ = ["load_ipython_extension", "unload_ipython_extension", "MariaDBMagics"]
+
 
 @magics_class
 class MariaDBMagics(DisplayMagics):

@@ -427,13 +427,16 @@ def load_ipython_extension(ipython):
         None
     """
     try:
-        node_magic = NodeMagics(ipython)
-        ipython.register_magics(node_magic)
-        ipython.node_magic = node_magic
-    except NameError:
+        node_magics = NodeMagics(ipython)
+        ipython.register_magics(node_magics)
+        ipython.node_magics = node_magics
+    except (NameError, AttributeError):
         print("IPython shell not available.")
 
 
 def unload_ipython_extension(ipython):
     """Unloads the extension"""
-    del ipython.node_magic
+    try:
+        del ipython.node_magics
+    except (NameError, AttributeError):
+        print("IPython shell not available.")

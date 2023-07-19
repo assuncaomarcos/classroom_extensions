@@ -7,6 +7,7 @@ import asyncio
 from IPython.utils import io
 from classroom_extensions.node import NodeProcessManager
 from classroom_extensions.node import JavascriptWithConsole
+import classroom_extensions.node as node_ext
 from .base import BaseTestCase
 
 
@@ -94,6 +95,14 @@ class TestNodeJs(BaseTestCase):
         cell_content = "console.log('----');"
         self.ipython.run_cell_magic("javascript", line="", cell=f"{cell_content}")
         self.assertEqual(expected_dir, self.publisher.display_output.pop())
+
+    def test_incorrect_loading(self):
+        """Tests incorrectly loading the extension."""
+        expected = "IPython shell not available.\n"
+        output = self.capture_output(node_ext.load_ipython_extension, None)
+        self.assertEqual(output, expected)
+        output = self.capture_output(node_ext.unload_ipython_extension, None)
+        self.assertEqual(output, expected)
 
 
 if __name__ == "__main__":
