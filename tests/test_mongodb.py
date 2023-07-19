@@ -6,6 +6,7 @@ import unittest
 import os
 import uuid
 from classroom_extensions.mongodb import MongoDBConfig
+import classroom_extensions.mongodb as mongodb_ext
 from .base import BaseTestCase
 
 MONGO_USERNAME = "admin"
@@ -67,6 +68,14 @@ class TestMongoDB(BaseTestCase):
         self.capture_output(
             self.ipython.run_cell_magic, "mongo", line=PARAM_LINE, cell=js_code
         )
+
+    def test_incorrect_loading(self):
+        """Tests incorrectly loading the extension."""
+        expected = "IPython shell not available.\n"
+        output = self.capture_output(mongodb_ext.load_ipython_extension, None)
+        self.assertEqual(output, expected)
+        output = self.capture_output(mongodb_ext.unload_ipython_extension, None)
+        self.assertEqual(output, expected)
 
 
 if __name__ == "__main__":

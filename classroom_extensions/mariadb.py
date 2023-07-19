@@ -22,19 +22,16 @@ class MariaDBMagics(DisplayMagics):
     """Implements the MariaDB magics using the database
     client provided by the MariaDB kernel"""
 
-    db_client: MariaDBClient
-    in_notebook: bool
+    _db_client: MariaDBClient
+    _in_notebook: bool
 
     def __init__(self, shell):
         super().__init__(shell=shell)
-        self.in_notebook = shell.has_trait("kernel")
+        self._in_notebook = shell.has_trait("kernel")
         self.log = shell.log
         config = ClientConfig(self.log)
-        self.db_client = MariaDBClient(self.log, config)
-        self.db_client.start()
-
-    def __del__(self):
-        self.db_client.stop()
+        self._db_client = MariaDBClient(self.log, config)
+        self._db_client.start()
 
     @cell_magic
     def sql(self, line: str = "", cell: str = None) -> None:
@@ -52,18 +49,18 @@ class MariaDBMagics(DisplayMagics):
         try:
             parser = CodeParser(self.log, cell, ";")
         except ValueError as value_error:
-            self.log.error(f"Error with SQL parser: {str(value_error)}")
+            print(f"Error with SQL parser: {str(value_error)}")
             return
 
         result = ""
         for stmt in parser.get_sql():
-            result += self.db_client.run_statement(stmt)
+            result += self._db_client.run_statement(stmt)
 
-            if self.db_client.iserror():
-                self.log.error(f"Error: {self.db_client.error_message()}")
+            if self._db_client.iserror():
+                print(f"Error: {self._db_client.error_message()}")
                 continue
 
-        display_obj = HTML(result) if self.in_notebook else result
+        display_obj = HTML(result) if self._in_notebook else result
         display(display_obj)
 
 
@@ -78,8 +75,19 @@ def load_ipython_extension(ipython):
         None
     """
     try:
-        ipython.register_magics(MariaDBMagics(ipython))
+        mariadb_magics = MariaDBMagics(ipython)
+        ipython.register_magics(mariadb_magics)
+        ipython.mariadb_magics = mariadb_magics
     except ServerIsDownError as server_error:
         ipython.log.error(f"Error trying to access MariaDB Server: {server_error}")
-    except NameError as name_error:
-        ipython.log.error(f"Error registering the magic command: {name_error}")
+    except (NameError, AttributeError):
+        print("IPython shell not available.")
+
+
+def unload_ipython_extension(ipython):
+    """Does some clean up"""
+
+    try:
+        del ipython.mariadb_magics
+    except (NameError, AttributeError):
+        print("IPython shell not available.")

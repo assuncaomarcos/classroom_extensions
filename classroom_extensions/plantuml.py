@@ -3,27 +3,20 @@
 
 """ Extension that uses PlantUML to draw multiple types of diagrams """
 
-from copy import copy
-from os.path import expanduser, exists
 import json
 import sys
-from plantweb.render import render
+from os.path import expanduser
+
+from IPython.core import magic_arguments
 from IPython.core.magic import magics_class, cell_magic, line_magic
 from IPython.core.magics.display import DisplayMagics, display
 from IPython.display import SVG, Image
-from IPython.core import magic_arguments
 from IPython.utils.process import arg_split
+from plantweb import render, defaults
 
-__all__ = ["load_ipython_extension", "PlantUmlMagics"]
+__all__ = ["load_ipython_extension", "unload_ipython_extension", "PlantUmlMagics"]
 
-
-DEFAULT_PLANTWEB_CONFIG = {
-    "engine": "plantuml",
-    "format": "svg",
-    "server": "http://plantuml.com/plantuml/",
-    "use_cache": True,
-    "cache_dir": "~/.cache/plantweb",
-}
+DEFAULT_PLANTWEB_CONFIG = defaults.DEFAULT_CONFIG
 
 
 def plantuml_args(func):
@@ -57,18 +50,12 @@ class PlantUmlMagics(DisplayMagics):
 
     def __init__(self, shell=None):
         super().__init__(shell=shell)
-        self._plantweb_config = self._load_plantweb_config()
+        self._plantweb_config = defaults.read_defaults()
 
     @property
     def plantweb_config(self) -> dict:
         """Returns the plantweb configuration"""
         return self._plantweb_config
-
-    def _load_plantweb_config(self) -> dict:
-        if not exists(self._config_path):
-            return copy(DEFAULT_PLANTWEB_CONFIG)
-        with open(self._config_path, "r", encoding="utf-8") as config_file:
-            return dict(json.loads(config_file.read()))
 
     def _save_plantuml_config(self) -> None:
         with open(self._config_path, "w", encoding="utf-8") as config_file:
@@ -83,7 +70,7 @@ class PlantUmlMagics(DisplayMagics):
         args = self.plantuml.parser.parse_args(argv)
         server = args.server if args.server else self._plantweb_config["server"]
 
-        output, out_format, _, _ = render(
+        output, out_format, _, _ = render.render(
             cell, server=server, engine="plantuml", format=args.format
         )
         if out_format == "svg":
@@ -106,11 +93,13 @@ class PlantUmlMagics(DisplayMagics):
 
         if args.server:
             self._plantweb_config["server"] = args.server
-            self._save_plantuml_config()
         else:
             print(
                 "Use --server=address to provide the address of a valid PlantUML server"
             )
+
+        self._plantweb_config["format"] = args.format
+        self._save_plantuml_config()
 
 
 def load_ipython_extension(ipython) -> None:
@@ -125,6 +114,22 @@ def load_ipython_extension(ipython) -> None:
     try:
         uml_magics = PlantUmlMagics(ipython)
         ipython.register_magics(uml_magics)
-        ipython.node_magic = uml_magics
-    except NameError:
+        ipython.plantuml_magics = uml_magics
+    except (NameError, AttributeError):
+        print("IPython shell not available.")
+
+
+def unload_ipython_extension(ipython) -> None:
+    """
+    To unload the extension
+
+    Args:
+        ipython (InteractiveShell): Currently active `InteractiveShell` instance.
+
+    Returns:
+        None
+    """
+    try:
+        del ipython.plantuml_magics
+    except (NameError, AttributeError):
         print("IPython shell not available.")

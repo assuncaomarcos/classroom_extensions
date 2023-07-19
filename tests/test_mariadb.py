@@ -6,6 +6,7 @@ import unittest
 import json
 from os import path
 from .base import BaseTestCase
+import classroom_extensions.mariadb as mariadb_ext
 
 MARIADB_USER = "testuser"
 MARIADB_PASSWORD = "testpassword"
@@ -32,13 +33,21 @@ class TestMariaDB(BaseTestCase):
         self.ipython.extension_manager.unload_extension("classroom_extensions.mariadb")
 
     def test_show_databases(self):
-        """ Tests the execution of SQL command """
+        """Tests the execution of SQL command"""
         print("Testing SHOW DATABASES command.")
         self.ipython.run_cell_magic("sql", line="", cell="SHOW DATABASES;")
         pattern = r"<TABLE BORDER=1><TR><TH>Database</TH></TR><TR><TD>(.*?)</TD></TR>.+</TABLE>"
         self.assertRegex(
             text=str(self.publisher.display_output.pop()), expected_regex=pattern
         )
+
+    def test_bad_sql(self):
+        """Tests the execution of a bad SQL command"""
+        print("Testing bad SQL command.")
+        output = self.capture_output(
+            self.ipython.run_cell_magic, "sql", line="", cell="SELEC * FROM H;"
+        )
+        self.assertRegex(output, "Error")
 
     @classmethod
     def _create_mariadb_config(cls):
@@ -60,6 +69,14 @@ class TestMariaDB(BaseTestCase):
         with open(config_path, "w", encoding="utf-8") as config_file:
             config_file.write(json.dumps(client_conf, indent=4))
             config_file.flush()
+
+    def test_incorrect_loading(self):
+        """Tests incorrectly loading the extension."""
+        expected = "IPython shell not available.\n"
+        output = self.capture_output(mariadb_ext.load_ipython_extension, None)
+        self.assertEqual(output, expected)
+        output = self.capture_output(mariadb_ext.unload_ipython_extension, None)
+        self.assertEqual(output, expected)
 
 
 if __name__ == "__main__":

@@ -14,6 +14,13 @@ from IPython.core.magics.script import ScriptMagics
 from IPython.core import magic_arguments
 from IPython.utils.process import arg_split
 
+__all__ = [
+    "load_ipython_extension",
+    "unload_ipython_extension",
+    "MongoDBConfig",
+    "MongoDBMagics",
+]
+
 
 def mongosh_args(func):
     """Single decorator for adding mongosh args"""
@@ -227,10 +234,14 @@ def load_ipython_extension(ipython):
         mongo_magics = MongoDBMagics(ipython)
         ipython.register_magics(mongo_magics)
         ipython.mongo_magics = mongo_magics
-    except NameError:
+    except (NameError, AttributeError):
         print("IPython shell not available.")
 
 
 def unload_ipython_extension(ipython):
     """Does some clean up"""
-    del ipython.mongo_magics
+
+    try:
+        del ipython.mongo_magics
+    except (NameError, AttributeError):
+        print("IPython shell not available.")
