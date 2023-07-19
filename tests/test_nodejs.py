@@ -60,15 +60,14 @@ class TestNodeJs(BaseTestCase):
         print("Test on saving a script on disk.")
         tmp_file = "/tmp/test_disk.js"
         self.ipython.run_cell_magic(
-                "javascript",
-                line=f"--target=disk --filename={tmp_file}",
-                cell="console.log('------');\n"
+            "javascript",
+            line=f"--target=disk --filename={tmp_file}",
+            cell="console.log('------');\n",
         )
         self.assertEqual(path.exists(tmp_file), True)
         try:
             self.ipython.run_cell_magic(
-                "javascript", line=f"--target=disk",
-                cell="console.log(' ');\n"
+                "javascript", line=f"--target=disk", cell="console.log(' ');\n"
             )
         except ValueError:
             pass
