@@ -1,0 +1,5 @@
+[run]
+    omit =
+        classroom_extensions/mariadb_install.py
+        classroom_extensions/mongodb_install.py
+    relative_files = True

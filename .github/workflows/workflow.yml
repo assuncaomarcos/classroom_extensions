@@ -35,16 +35,30 @@ jobs:
           sudo apt-get install python3-zipp
           pip install -r requirements.txt
 
-      - name: Run tests
+      - name: Test with pytest & coverage
         run: |
-          python -m unittest tests/test_html.py
-          python -m unittest tests/test_mariadb.py
-          python -m unittest tests/test_mongodb.py
-          python -m unittest tests/test_nodejs.py
-          python -m unittest tests/test_plantuml.py
+            pip install coveralls
+            coverage run -m unittest tests/run_tests.py
+            coverage report -m
+      - name: Coveralls Parallel
+        uses: AndreMiras/coveralls-python-action@develop
+        with:
+            github-token: ${{ secrets.github_token }}
+            parallel: true
 
       - name: Stop containers
         run: docker-compose -f "docker-compose.yml" down
+
+  finish_build:
+    name: Finish Coveralls
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Finished
+        uses: AndreMiras/coveralls-python-action@develop
+        with:
+          github-token: ${{ secrets.github_token }}
+          parallel-finished: true
 
   build:
     name: Build wheels
