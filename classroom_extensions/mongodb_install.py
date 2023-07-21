@@ -10,23 +10,28 @@ running Ubuntu 20.04.
 from os import path
 import os
 import glob
+import time
 from argparse import ArgumentParser
+from IPython.core.getipython import get_ipython
 from IPython.core.magic import magics_class, line_magic, Magics
 from .util import exec_cmd, get_os_release, is_colab
 
-_SOFTWARE_DESC = {"mongodb": "MongoDB", "mongodb_shell": "MongoDB Shell"}
+_START_DB_TIMEOUT = 5  # Timeout for starting MariaDB
+_SOFTWARE_DESC = {"mongo": "MongoDB"}
 
 _INSTALL_CMDS = {
-    "mongodb": ["apt update", "apt install mongodb", "service mongodb start"],
-    "mongodb_shell": [
-        "wget -qO- https://www.mongodb.org/static/pgp/server-6.0.asc |"
-        "sudo tee /etc/apt/trusted.gpg.d/server-6.0.asc",
+    "mongo": [
+        "apt update -y",
+        "apt-get install gnupg curl",
+        """curl -fsSL https://pgp.mongodb.com/server-6.0.asc | \
+             gpg -o /usr/share/keyrings/mongodb-server-6.0.gpg \
+             --dearmor""",
         "sudo apt-get install gnupg",
-        "echo 'deb [ arch=amd64,arm64 ] "
-        "https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse' | "
-        "sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list",
+        "echo 'deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg ] "
+        "https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse' "
+        "| tee /etc/apt/sources.list.d/mongodb-org-6.0.list",
         "sudo apt update",
-        "sudo apt install -y mongodb-mongosh",
+        "apt-get install -y mongodb-org",
     ],
 }
 
@@ -113,6 +118,14 @@ class MongoDBInstaller(Magics):
         except RuntimeError as runtime_error:
             print(f"Error importing sample databases: {runtime_error}")
 
+    @staticmethod
+    def _start_mongodb() -> None:
+        """Starts MongoDB"""
+
+        get_ipython().system_raw("mongod --config /etc/mongod.conf &")
+        print("Waiting for a few seconds for MongoDB server to start...")
+        time.sleep(_START_DB_TIMEOUT)
+
     @line_magic
     def install_mongodb(self, line: str):
         """Install MongoDB and MongoDB Shell"""
@@ -124,8 +137,9 @@ class MongoDBInstaller(Magics):
             )
 
         args = self._arg_parser.parse_args(line.split() if line else "")
-        self.install_software("mongodb")
-        self.install_software("mongodb_shell")
+        self.install_software("mongo")
+        self._start_mongodb()
+
         if args.sample_dbs:
             self.import_sample_datasets()
 
