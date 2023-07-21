@@ -30,7 +30,7 @@ _INSTALL_CMDS = {
         "echo 'deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg ] "
         "https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse' "
         "| tee /etc/apt/sources.list.d/mongodb-org-6.0.list",
-        "sudo apt update",
+        "apt update -y",
         "apt-get install -y mongodb-org",
     ],
 }

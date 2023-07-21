@@ -7,19 +7,26 @@ import subprocess
 from os import path
 import os
 import glob
+import time
+from IPython.core.getipython import get_ipython
 
 
-SOFTWARE_DESC = {"mongodb": "MongoDB", "mongodb_shell": "MongoDB Shell"}
+START_DB_TIMEOUT = 5  # Timeout for starting MariaDB
+SOFTWARE_DESC = {"mongo": "MongoDB"}
 
 INSTALL_CMDS = {
-    "mongodb": ["apt update", "apt install mongodb", "service mongodb start"],
-    "mongodb_shell": [
-        "wget -qO- https://www.mongodb.org/static/pgp/server-6.0.asc | sudo tee /etc/apt/trusted.gpg.d/server-6.0.asc",
+    "mongo": [
+        "apt update -y",
+        "apt-get install gnupg curl",
+        """curl -fsSL https://pgp.mongodb.com/server-6.0.asc | \
+             gpg -o /usr/share/keyrings/mongodb-server-6.0.gpg \
+             --dearmor""",
         "sudo apt-get install gnupg",
-        "echo 'deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse' | "
-        "sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list",
-        "sudo apt update",
-        "sudo apt install -y mongodb-mongosh",
+        "echo 'deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg ] "
+        "https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse' "
+        "| tee /etc/apt/sources.list.d/mongodb-org-6.0.list",
+        "apt update -y",
+        "apt-get install -y mongodb-org",
     ],
 }
 
@@ -87,7 +94,14 @@ def import_sample_datasets() -> None:
     except RuntimeError as runtime_error:
         print(f"Error importing sample databases: {runtime_error}")
 
+def start_mongodb() -> None:
+    """Starts MongoDB"""
 
-install_software("mongodb")
-install_software("mongodb_shell")
+    get_ipython().system_raw("mongod --config /etc/mongod.conf &")
+    print("Waiting for a few seconds for MongoDB server to start...")
+    time.sleep(START_DB_TIMEOUT)
+
+
+install_software("mongo")
+start_mongodb()
 import_sample_datasets()
