@@ -34,8 +34,8 @@ class TestNodeJs(BaseTestCase):
 
         async def run_cmd():
             async with proc_manager.open_process(
-                "which", "pwd", stdout_callback=stdout_callback
-            ):
+                "ls", "/usr/bin/pwd", stdout_callback=stdout_callback
+            ) :
                 pass
 
         asyncio.run(run_cmd())
