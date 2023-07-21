@@ -65,9 +65,9 @@ class MongoDBInstaller(Magics):
         Check if running on Colab with the right Ubuntu release
 
         Returns:
-            True if running on Google Colab on Ubuntu 20.xx container
+            True if running on Google Colab on Ubuntu 2x.xx container
         """
-        return is_colab() and get_os_release().startswith("20.")
+        return is_colab() and get_os_release().startswith("2")
 
     @staticmethod
     def install_software(software: str) -> None:

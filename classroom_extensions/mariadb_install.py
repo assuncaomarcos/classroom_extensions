@@ -62,15 +62,16 @@ class MariaDBInstaller(Magics):
         Check if running on Colab with the right Ubuntu release
 
         Returns:
-            True if running on Google Colab on Ubuntu 20.xx container
+            True if running on Google Colab on Ubuntu 2x.xx container
         """
-        return is_colab() and get_os_release().startswith("20.")
+        return is_colab() and get_os_release().startswith("2")
 
     @classmethod
     def _start_mariadb(cls) -> None:
         """Starts MariaDB"""
 
-        get_ipython().system_raw("service mysql start &")
+        service_name = "mariadb" if get_os_release().startswith("22") else "mysql"
+        get_ipython().system_raw(f"service {service_name} start &")
         print("Waiting for a few seconds for MariaDB server to start...")
         time.sleep(START_DB_TIMEOUT)
 
