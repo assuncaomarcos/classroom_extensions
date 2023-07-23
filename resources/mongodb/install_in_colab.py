@@ -11,7 +11,7 @@ import time
 from IPython.core.getipython import get_ipython
 
 
-START_DB_TIMEOUT = 5  # Timeout for starting MariaDB
+START_DB_TIMEOUT = 5  # Timeout for starting MongoDB
 SOFTWARE_DESC = {"mongo": "MongoDB"}
 
 INSTALL_CMDS = {
@@ -75,24 +75,26 @@ def import_sample_datasets() -> None:
             exec_cmd(f"git clone {SAMPLE_DBS_URL} {local_clone}")
         else:
             print("Skipping git clone as local repository seems to exist.")
-            datasets = [
-                f
-                for f in os.listdir(local_clone)
-                if not path.isfile(path.join(local_clone, f))
-            ]
-            for dataset in datasets:
-                dataset_path = path.join(clone_path, dataset)
-                print(f"Importing dataset {dataset}...")
-                for json_file in glob.glob(f"{dataset_path}/*.json"):
-                    collection = path.splitext(path.basename(json_file))[0]
-                    cmd = (
-                        f"mongoimport --drop --host localhost --port 27017 "
-                        f"--db {dataset} --collection {collection} --file {json_file}"
-                    )
-                    exec_cmd(cmd)
+
+        datasets = [
+            f
+            for f in os.listdir(local_clone)
+            if not path.isfile(path.join(local_clone, f))
+        ]
+        for dataset in datasets:
+            dataset_path = path.join(clone_path, dataset)
+            print(f"Importing dataset {dataset}...")
+            for json_file in glob.glob(f"{dataset_path}/*.json"):
+                collection = path.splitext(path.basename(json_file))[0]
+                cmd = (
+                    f"mongoimport --drop --host localhost --port 27017 "
+                    f"--db {dataset} --collection {collection} --file {json_file}"
+                )
+                exec_cmd(cmd)
         print("Finished importing the sample datasets.")
     except RuntimeError as runtime_error:
         print(f"Error importing sample databases: {runtime_error}")
+
 
 def start_mongodb() -> None:
     """Starts MongoDB"""

@@ -5,7 +5,7 @@
 An extension to install MongoDB and MongoDB Shell (mongosh).
 
 Note: This extension assumes that you are working in Google Colab
-running Ubuntu 20.04.
+running Ubuntu 22.04.
 """
 from os import path
 import os
@@ -16,7 +16,9 @@ from IPython.core.getipython import get_ipython
 from IPython.core.magic import magics_class, line_magic, Magics
 from .util import exec_cmd, get_os_release, is_colab
 
-_START_DB_TIMEOUT = 5  # Timeout for starting MariaDB
+__all__ = ["load_ipython_extension", "unload_ipython_extension", "MongoDBInstaller"]
+
+_START_DB_TIMEOUT = 5  # Timeout for starting MongoDB
 _SOFTWARE_DESC = {"mongo": "MongoDB"}
 
 _INSTALL_CMDS = {
@@ -156,6 +158,17 @@ def load_ipython_extension(ipython):
         None
     """
     try:
-        ipython.register_magics(MongoDBInstaller(ipython))
-    except NameError:
+        mongodb_installer = MongoDBInstaller(ipython)
+        ipython.register_magics(mongodb_installer)
+        ipython.mongodb_installer = mongodb_installer
+    except (NameError, AttributeError):
+        print("IPython shell not available.")
+
+
+def unload_ipython_extension(ipython):
+    """Does some clean up"""
+
+    try:
+        del ipython.mongodb_installer
+    except (NameError, AttributeError):
         print("IPython shell not available.")

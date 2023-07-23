@@ -6,7 +6,7 @@ An extension to install MariaDB, create the config file required by the
 MariaDB Jupyter to access it, and load a sample database.
 
 Note: This extension assumes that you are working in Google Colab
-running Ubuntu 20.04.
+running Ubuntu 22.04.
 """
 import time
 from os import path
@@ -16,8 +16,10 @@ from IPython.core.magic import magics_class, line_magic, Magics
 from IPython.core.getipython import get_ipython
 from .util import exec_cmd, get_os_release, is_colab, get_user
 
-SAMPLE_DB = "https://www.mariadbtutorial.com/wp-content/uploads/2019/10/nation.zip"
-START_DB_TIMEOUT = 5  # Timeout for starting MariaDB
+__all__ = ["load_ipython_extension", "unload_ipython_extension", "MariaDBInstaller"]
+
+_SAMPLE_DB = "https://www.mariadbtutorial.com/wp-content/uploads/2019/10/nation.zip"
+_START_DB_TIMEOUT = 5  # Timeout for starting MariaDB
 
 
 @magics_class
@@ -66,14 +68,14 @@ class MariaDBInstaller(Magics):
         """
         return is_colab() and get_os_release().startswith("2")
 
-    @classmethod
-    def _start_mariadb(cls) -> None:
+    @staticmethod
+    def _start_mariadb() -> None:
         """Starts MariaDB"""
 
         service_name = "mariadb" if get_os_release().startswith("22") else "mysql"
         get_ipython().system_raw(f"service {service_name} start &")
         print("Waiting for a few seconds for MariaDB server to start...")
-        time.sleep(START_DB_TIMEOUT)
+        time.sleep(_START_DB_TIMEOUT)
 
     @line_magic
     def install_mariadb(self, line: str):
@@ -127,7 +129,7 @@ class MariaDBInstaller(Magics):
 
     def _load_sample_db(self):
         """Configure a sample MariaDB database"""
-        exec_cmd(f"wget {SAMPLE_DB}")
+        exec_cmd(f"wget {_SAMPLE_DB}")
         exec_cmd("unzip -o nation.zip")
         print("Importing nation database...")
         exec_cmd(
@@ -147,6 +149,17 @@ def load_ipython_extension(ipython):
         None
     """
     try:
-        ipython.register_magics(MariaDBInstaller(ipython))
-    except NameError:
+        mariadb_installer = MariaDBInstaller(ipython)
+        ipython.register_magics(mariadb_installer)
+        ipython.mariadb_installer = mariadb_installer
+    except (NameError, AttributeError):
+        print("IPython shell not available.")
+
+
+def unload_ipython_extension(ipython):
+    """Does some clean up"""
+
+    try:
+        del ipython.mariadb_installer
+    except (NameError, AttributeError):
         print("IPython shell not available.")
