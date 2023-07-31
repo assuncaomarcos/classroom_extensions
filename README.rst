@@ -49,10 +49,10 @@ worrying about setting things up.
 Server-Side JavaScript
 ----------------------
 
-This extension, called `node`, customizes the `%%javascript` cell magic to enable
+This extension, called `web`, customizes the `%%javascript` cell magic to enable
 executing JavaScript code on the server or container hosting the Jupyter Notebook or
 on Google Colab. Node.js executes the code provided in a cell whose `--target` argument
-receives the value `node`. It also enables starting long-running Node.js server
+receives the value `web`. It also enables starting long-running Node.js server
 processes that will listen on given ports without blocking the code cell of
 the notebook. In addition to executing JavaScript code on the server side, when run
 on the browser, the magic enables printing the output of the browser's console in
@@ -61,7 +61,7 @@ the result section of the code cell.
 Custom HTML Magic
 -----------------
 
-The `html` extension customizes the `%%html` magic. After rendering the HTML code
+The `web` extension also customizes the `%%html` magic. After rendering the HTML code
 inserted in the cell, the extension displays a high-level copy of the browser's
 console. This behavior helps in teaching HTML or JavaScript that writes on the console.
 

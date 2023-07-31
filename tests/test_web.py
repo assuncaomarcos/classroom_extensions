@@ -6,9 +6,9 @@ import unittest
 import asyncio
 from os import path
 from IPython.utils import io
-from classroom_extensions.node import NodeProcessManager
-from classroom_extensions.node import JavascriptWithConsole
-import classroom_extensions.node as node_ext
+from classroom_extensions.web import NodeProcessManager
+from classroom_extensions.web import JavascriptWithConsole, HTMLWithConsole
+import classroom_extensions.web as node_ext
 from .base import BaseTestCase
 
 
@@ -17,10 +17,10 @@ class TestNodeJs(BaseTestCase):
 
     def setUp(self) -> None:
         # Loads the extension
-        self.ipython.extension_manager.load_extension("classroom_extensions.node")
+        self.ipython.extension_manager.load_extension("classroom_extensions.web")
 
     def tearDown(self) -> None:
-        self.ipython.extension_manager.unload_extension("classroom_extensions.node")
+        self.ipython.extension_manager.unload_extension("classroom_extensions.web")
 
     def test_process_manager(self):
         """Tests the process manager"""
@@ -113,6 +113,31 @@ class TestNodeJs(BaseTestCase):
         cell_content = "console.log('----');"
         self.ipython.run_cell_magic("javascript", line="", cell=f"{cell_content}")
         self.assertEqual(expected_dir, self.publisher.display_output.pop())
+
+    def test_html_javascript(self):
+        """Test HTML with JavaScript"""
+        print("Testing HTML with JavaScript")
+        expected_dir = {
+            "text/plain": f"<{HTMLWithConsole.__module__}."
+            f"{HTMLWithConsole.__qualname__} object>"
+        }
+        cell_content = "console.log('----');"
+        self.ipython.run_cell_magic("html", line="--console", cell=f"{cell_content}")
+        self.assertEqual(expected_dir, self.publisher.display_output.pop())
+
+    def test_html_console(self):
+        """Tests the HTML with console."""
+
+        html_code = """
+            <div class="container">
+            <h1>An H1 Title</h1>
+            <h2>An H2 Title</h2>
+            <p>A paragraph with some text.</p>
+            </div>
+        """
+
+        html = HTMLWithConsole(data=html_code, console=True)
+        self.assertRegex(html._repr_html_(), "console_elems")
 
     def test_incorrect_loading(self):
         """Tests incorrectly loading the extension."""
