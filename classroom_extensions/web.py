@@ -4,7 +4,8 @@
 The code customizes IPython's %%javascript magic by introducing line arguments
 that allow for executing the JavaScript code on the server side (via Node.js).
 When executed on the browser, the magic creates a section in the code cell that
-mimics the browser's console
+mimics the browser's console. It also customizes `%%html` to enable the result
+section of the cell to mimic the browser's console.
 """
 
 from functools import partial

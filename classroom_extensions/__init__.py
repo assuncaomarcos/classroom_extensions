@@ -9,8 +9,7 @@ __version__ = '0.0.6'
 __all__ = [
     "mariadb",
     "mariadb_install",
-    "web.py",
-    "html",
+    "web",
     "plantuml",
     "mongodb"
 ]
