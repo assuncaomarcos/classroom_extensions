@@ -147,6 +147,11 @@ class TestNodeJs(BaseTestCase):
         output = self.capture_output(node_ext.unload_ipython_extension, None)
         self.assertEqual(output, expected)
 
+    def test_http_server(self):
+        """ Tests start/stop of HTTP server """
+        self.ipython.run_line_magic("http_server", line="--action=start --bind=0.0.0.0 --port=8000 --directory=/tmp")
+        self.ipython.run_line_magic("http_server", line="--action=stop --port=8000")
+
 
 if __name__ == "__main__":
     unittest.main()

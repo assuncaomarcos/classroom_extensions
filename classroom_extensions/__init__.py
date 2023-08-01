@@ -4,7 +4,7 @@
     Set of IPython extensions used for teaching at ETS Montreal.
 """
 
-__version__ = '0.0.6'
+__version__ = '0.0.7'
 
 __all__ = [
     "mariadb",

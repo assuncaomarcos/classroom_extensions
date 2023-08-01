@@ -18,8 +18,9 @@ import io
 import uuid
 import shutil
 import sys
+import os
 import psutil
-from IPython.core.magic import magics_class, cell_magic
+from IPython.core.magic import magics_class, cell_magic, line_magic
 from IPython.core.magics.display import DisplayMagics
 from IPython.display import display, Javascript, HTML
 from IPython.core import magic_arguments
@@ -31,7 +32,7 @@ __all__ = [
     "WebMagics",
     "JavascriptWithConsole",
     "HTMLWithConsole",
-    "NodeProcessManager"
+    "NodeProcessManager",
 ]
 
 # timeout to wait for a node server process to start (in seconds)
@@ -419,6 +420,41 @@ def html_args(func):
     return func
 
 
+def http_server_args(func):
+    """Single decorator for adding HTTP server args"""
+    args = [
+        magic_arguments.argument(
+            "--action",
+            "-a",
+            default="start",
+            choices=["start", "stop"],
+            help="action to execute (default: start)",
+        ),
+        magic_arguments.argument(
+            "--bind",
+            "-b",
+            default="0.0.0.0",
+            help="specify alternate bind address (default: all interfaces)",
+        ),
+        magic_arguments.argument(
+            "--directory",
+            "-d",
+            default=os.getcwd(),
+            help="specify alternate directory (default: current directory)",
+        ),
+        magic_arguments.argument(
+            "--port",
+            "-p",
+            default=8000,
+            type=int,
+            help="specify alternate port (default: 8000)",
+        ),
+    ]
+    for arg in args:
+        func = arg(func)
+    return func
+
+
 @magics_class
 class WebMagics(DisplayMagics):
     """
@@ -505,6 +541,35 @@ class WebMagics(DisplayMagics):
         args = self.html.parser.parse_args(argv)
         html = HTMLWithConsole(cell, args.console)
         display(html)
+
+    @magic_arguments.magic_arguments()
+    @http_server_args
+    @line_magic
+    def http_server(self, line=None) -> None:
+        """Line magic to start/stop a python Web server"""
+        argv = arg_split(line, posix=not sys.platform.startswith("win"))
+        args = self.http_server.parser.parse_args(argv)
+
+        def start_web_server(address, directory, port):
+            stop_web_server(port)  # Stop any server that is currently running
+            print(f"Starting server listening on port {port}...")
+            self.shell.system_raw(
+                f"python -m http.server {port} --bind {address} --directory {directory} &"
+            )
+
+        def stop_web_server(port):
+            print(f"Stopping any server listening on port {port}...")
+            stop_cmd = (
+                r"ps -x | grep -e '[h]ttp.server\s*"
+                + str(port)
+                + "' | awk '{print $1}' | xargs -I {} kill {}"
+            )
+            self.shell.system_raw(stop_cmd)
+
+        if args.action == "start":
+            start_web_server(args.bind, args.directory, args.port)
+        else:
+            stop_web_server(args.port)
 
 
 def load_ipython_extension(ipython):
