@@ -8,7 +8,7 @@ import sys
 from os.path import expanduser
 
 from IPython.core import magic_arguments
-from IPython.core.magic import magics_class, cell_magic, line_magic
+from IPython.core.magic import magics_class, cell_magic, line_magic, line_cell_magic
 from IPython.core.magics.display import DisplayMagics, display
 from IPython.display import SVG, Image
 from IPython.utils.process import arg_split
@@ -100,6 +100,30 @@ class PlantUmlMagics(DisplayMagics):
 
         self._plantweb_config["format"] = args.format
         self._save_plantuml_config()
+
+    @magic_arguments.magic_arguments()
+    @plantuml_args
+    @magic_arguments.argument("--json", "-j", type=str, help="Path to the file on disk")
+    @line_cell_magic
+    def json(self, line="", cell=None) -> None:
+        """Used to create a graphical representation of a JSON file/object"""
+        args = magic_arguments.parse_argstring(self.json, line)
+
+        if args.json is not None:
+            with open(args.json, "r", encoding="UTF-8") as json_file:
+                cell = json_file.read()
+
+        cell = f"""
+                @startjson
+                {cell}
+                @endjson
+                """
+        command = ""
+        for arg, value in vars(args).items():
+            if value is not None and arg != "json":
+                command += f" --{arg}={value}"
+
+        self.plantuml(line=command, cell=cell)
 
 
 def load_ipython_extension(ipython) -> None:

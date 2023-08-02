@@ -35,7 +35,7 @@ class TestNodeJs(BaseTestCase):
         async def run_cmd():
             async with proc_manager.open_process(
                 "ls", "/usr/bin/pwd", stdout_callback=stdout_callback
-            ) :
+            ):
                 pass
 
         asyncio.run(run_cmd())
@@ -67,7 +67,7 @@ class TestNodeJs(BaseTestCase):
         self.assertEqual(path.exists(tmp_file), True)
         try:
             self.ipython.run_cell_magic(
-                "javascript", line=f"--target=disk", cell="console.log(' ');\n"
+                "javascript", line="--target=disk", cell="console.log(' ');\n"
             )
         except ValueError:
             pass
@@ -148,8 +148,11 @@ class TestNodeJs(BaseTestCase):
         self.assertEqual(output, expected)
 
     def test_http_server(self):
-        """ Tests start/stop of HTTP server """
-        self.ipython.run_line_magic("http_server", line="--action=start --bind=0.0.0.0 --port=8000 --directory=/tmp")
+        """Tests start/stop of HTTP server"""
+        self.ipython.run_line_magic(
+            "http_server",
+            line="--action=start --bind=0.0.0.0 --port=8000 --directory=/tmp",
+        )
         self.ipython.run_line_magic("http_server", line="--action=stop --port=8000")
 
 

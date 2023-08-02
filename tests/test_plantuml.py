@@ -44,6 +44,26 @@ _SIMPLE_DIAGRAM = """
     Foo1 -> Foo5 : To database
 """
 
+_SIMPLE_JSON = """
+{
+    "status": "OK",
+    "code": 200,
+    "total": 2,
+    "data": [
+        {
+            "title": "Harum cumque placeat id.",
+            "description": "Qui autem tenetur ut aut.",
+            "url": "https://placekitten.com/300/500"
+        },
+        {
+            "title": "Incidunt neque at enim fuga.",
+            "description": "Harum libero quo dolorum aut vel.",
+            "url": "https://placekitten.com/300/400"
+        }
+    ]
+}
+"""
+
 _TEST_PLANTUML_URL = "http://localhost:8080/plantuml/"
 _DEFAULT_PLANTUML_URL = "http://plantuml.com/plantuml/"
 _DEFAULT_FORMAT = "svg"
@@ -80,6 +100,25 @@ class TestPlantUML(BaseTestCase):
         with self._config(server=_DEFAULT_PLANTUML_URL, out_format="svg") as magic:
             try:
                 magic.plantuml(cell=_SIMPLE_DIAGRAM)
+            except Exception as exception:
+                self.fail(f"Error: {exception}")
+
+    def test_render_json(self):
+        """Tests rendering an svg"""
+        print("Testing PlantUML rendering JSON...")
+        with self._config(server=_DEFAULT_PLANTUML_URL, out_format="png") as magic:
+            try:
+                magic.json(cell=_SIMPLE_JSON)
+            except Exception as exception:
+                self.fail(f"Error: {exception}")
+
+        tmp_file = "/tmp/temp_json.json"
+        with open(tmp_file, "w", encoding="UTF-8") as json_file:
+            json_file.write(_SIMPLE_JSON)
+
+        with self._config(server=_DEFAULT_PLANTUML_URL, out_format="png") as magic:
+            try:
+                magic.json(line=f"--json={tmp_file}", cell=None)
             except Exception as exception:
                 self.fail(f"Error: {exception}")
 
