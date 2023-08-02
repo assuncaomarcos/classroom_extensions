@@ -11,5 +11,6 @@ __all__ = [
     "mariadb_install",
     "web",
     "plantuml",
-    "mongodb"
+    "mongodb",
+    "mongodb_install"
 ]
