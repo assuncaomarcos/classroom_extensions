@@ -232,7 +232,6 @@ class NodeProcessManager:
             server_task = asyncio.create_task(proc.wait())
             try:
                 await asyncio.shield(server_task)
-                await asyncio.shield(stream_task)
             except asyncio.CancelledError:
                 pass
 
