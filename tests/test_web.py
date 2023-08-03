@@ -3,8 +3,10 @@
 """ Tests the JavaScript magics """
 
 import unittest
+import asyncio
 from os import path
 from IPython.utils import io
+from classroom_extensions.web import NodeProcessManager
 from classroom_extensions.web import JavascriptWithConsole, HTMLWithConsole
 import classroom_extensions.web as node_ext
 from .base import BaseTestCase
@@ -19,6 +21,25 @@ class TestNodeJs(BaseTestCase):
 
     def tearDown(self) -> None:
         self.ipython.extension_manager.unload_extension("classroom_extensions.web")
+
+    def test_process_manager(self):
+        """Tests the process manager"""
+        print("Test process manager.")
+        proc_manager = NodeProcessManager()
+        where_ls = ""
+
+        def stdout_callback(data):
+            nonlocal where_ls
+            where_ls += data
+
+        async def run_cmd():
+            async with proc_manager.open_process(
+                "ls", "/usr/bin/pwd", stdout_callback=stdout_callback
+            ):
+                pass
+
+        asyncio.run(run_cmd())
+        self.assertRegex(text=where_ls, expected_regex=r"pwd")
 
     def test_node_script(self):
         """Tests executing server-side JavaScript"""
@@ -55,6 +76,7 @@ class TestNodeJs(BaseTestCase):
         """Tests the creation of a Node.js server"""
         print("Testing executing Node.js server...")
         cell_output: str
+        expected_output = "Server listening at http://localhost:3000/"
         cell_content = """
             const http = require('http')
 
@@ -68,7 +90,7 @@ class TestNodeJs(BaseTestCase):
             })
 
             server.listen(port, hostname, () => {
-                console.log(`Server node listening at http://${hostname}:${port}/`)
+                console.log(`Server listening at http://${hostname}:${port}/`)
             })
         """
         with io.capture_output() as captured:
@@ -78,7 +100,7 @@ class TestNodeJs(BaseTestCase):
                 cell=f"{cell_content}",
             )
             cell_output = captured.stdout
-        self.assertRegex(cell_output.strip(), r"(Server|Killing)")
+        self.assertEqual(cell_output.strip(), expected_output)
 
     def test_javascript(self):
         """Tests normal JavaScript code"""
