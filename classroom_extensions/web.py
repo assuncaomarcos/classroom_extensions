@@ -8,17 +8,17 @@ mimics the browser's console. It also customizes `%%html` to enable the result
 section of the cell to mimic the browser's console.
 """
 
-from functools import partial
-from typing import Any, Callable, AnyStr
+from typing import Any, AnyStr
 from os import path, environ
 from asyncio import streams
+from threading import Thread
 import asyncio
-import contextlib
 import io
 import uuid
 import shutil
 import sys
 import os
+import errno
 import psutil
 from IPython.core.magic import magics_class, cell_magic, line_magic
 from IPython.core.magics.display import DisplayMagics
@@ -159,6 +159,10 @@ class NodeProcessManager:
     """Used to manage the execution of Node processes"""
 
     _node_cmd: str = "/usr/bin/node"
+    """ Default path to node command """
+
+    _event_loop: Any = None
+    """ The event loop on which to run subprocesses """
 
     def __init__(self):
         self._daemons: dict[int, Any] = {}
@@ -166,93 +170,35 @@ class NodeProcessManager:
             "node"
         )  # Try to discover full path of node command
 
-    @classmethod
-    async def read_stream(
-        cls,
-        proc,
-        stream: streams.StreamReader,
-        callback: Callable[[AnyStr], None],
-    ) -> None:
+    @staticmethod
+    async def read_stream(stream: streams.StreamReader, file_object: Any) -> None:
         """
         Reads the stout/stderr stream of a given process
 
         Args:
-            proc: the process to read the output from
             stream: the stream to read from
-            callback: the callback function to call when data is read
+            file_object: a file descriptor to output stream
 
         Returns:
             None
         """
-        while proc.returncode is None:
-            data = await stream.readline()
-            if not data:
-                break
-            callback(data.decode().rstrip())
 
-    @contextlib.asynccontextmanager
-    async def open_process(
-        self,
-        cmd: str,
-        *cmd_args: dict,
-        work_dir: str = None,
-        env_vars: dict = None,
-        daemon: bool = False,
-        stdout_callback: Callable[[AnyStr], None] = print,
-    ) -> None:
-        """
-        Creates a new Node process
-
-        Args:
-            cmd: the command to execute
-            *cmd_args: the command arguments
-            work_dir: the path to the working directory
-            env_vars: the environment variables to set
-            daemon: True if the process will run in background
-            stdout_callback: the callback function to call when reading the output stream
-
-        Returns:
-            None
-        """
-        proc = await asyncio.create_subprocess_exec(
-            cmd,
-            *cmd_args,
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.STDOUT,
-            cwd=work_dir,
-            env=env_vars,
-        )
-        stream_task = asyncio.create_task(
-            self.read_stream(proc, proc.stdout, stdout_callback)
-        )
-
-        async def server_wait() -> None:
-            """Shields the execution and stream reader tasks for a background process"""
-            server_task = asyncio.create_task(proc.wait())
+        async def read_chunk(the_stream):
             try:
-                await asyncio.shield(server_task)
-            except asyncio.CancelledError:
-                pass
+                return await the_stream.readuntil(b"\n")
+            except asyncio.exceptions.IncompleteReadError as in_error:
+                return in_error.partial
+            except asyncio.exceptions.LimitOverrunError as limit_error:
+                return await the_stream.read(limit_error.consumed)
 
-        try:
-            yield proc
-        finally:
-            if not daemon:
-                await proc.wait()
-                await stream_task
-            else:
-                try:
-                    await asyncio.wait_for(server_wait(), START_SERVER_TIMEOUT)
-                except asyncio.TimeoutError:
-                    pass
+        while True:
+            chunk = (await read_chunk(stream)).decode("utf8", errors="replace")
+            if not chunk:
+                break
+            file_object.write(chunk)
+            file_object.flush()
 
-    async def execute(
-        self,
-        js_file: str = None,
-        port: int = None,
-        stdout_callback: Callable[[AnyStr], None] = partial(print, flush=True),
-    ) -> None:
+    def execute(self, js_file: str = None, port: int = None) -> None:
         """
         Use Node.js to run the provided script. If a port is given,
         the script will be run in background without blocking the cell
@@ -260,7 +206,6 @@ class NodeProcessManager:
         Args:
             js_file: the full path to the JavaScript file
             port: the port number for the server
-            stdout_callback: the callback function to call when reading the output stream
 
         Returns:
             None
@@ -272,19 +217,69 @@ class NodeProcessManager:
 
         work_dir = path.dirname(path.realpath(js_file))
         daemon = port is not None
-        async with self.open_process(
-            self._node_cmd,
-            js_file,
-            work_dir=work_dir,
-            env_vars=server_env,
-            daemon=daemon,
-            stdout_callback=stdout_callback,
-        ) as proc:
-            if daemon:
-                self._daemons[port] = proc
+        cmd = self._node_cmd
 
-    @classmethod
-    def _force_kill(cls, port: int) -> None:
+        # Adapted from IPython's script magics
+        # Create the event loop on a background thread
+        if self._event_loop is None:
+            if sys.platform == "win32":
+                event_loop = asyncio.WindowsProactorEventLoopPolicy().new_event_loop()
+            else:
+                event_loop = asyncio.new_event_loop()
+            self._event_loop = event_loop
+
+            # start the loop in a background thread
+            asyncio_thread = Thread(target=event_loop.run_forever, daemon=True)
+            asyncio_thread.start()
+        else:
+            event_loop = self._event_loop
+
+        def in_thread(coro):
+            """Call a coroutine on the asyncio thread"""
+            return asyncio.run_coroutine_threadsafe(coro, event_loop).result()
+
+        try:
+            proc = in_thread(
+                asyncio.create_subprocess_exec(
+                    cmd,
+                    js_file,
+                    stdin=asyncio.subprocess.PIPE,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                    cwd=work_dir,
+                    env=server_env,
+                )
+            )
+        except OSError as error:
+            if error.errno == errno.ENOENT:
+                print(f"Could not execute: {cmd} {js_file}")
+                return
+            raise
+
+        async def script_wait(process):
+            """Wait for process and trigger reading stdout"""
+
+            await process.stdin.drain()
+            process.stdin.close()
+            await process.stdin.wait_closed()
+
+            stdout_task = asyncio.create_task(
+                self.read_stream(process.stdout, sys.stdout)
+            )
+            stdout_err = asyncio.create_task(
+                self.read_stream(process.stderr, sys.stderr)
+            )
+            await asyncio.wait([stdout_task, stdout_err])
+            await process.wait()
+
+        if not daemon:
+            in_thread(script_wait(proc))
+        else:
+            event_loop.call_soon_threadsafe(lambda: asyncio.Task(script_wait(proc)))
+            self._daemons[port] = proc
+
+    @staticmethod
+    def _force_kill(port: int) -> None:
         """To kill a Node.js process listening on a given port"""
         for proc in psutil.process_iter(["pid", "name", "connections"]):
             try:
@@ -483,8 +478,8 @@ class WebMagics(DisplayMagics):
         """
         if not filename:
             filename = f"{uuid.uuid4().hex}.js"
-        with io.open(filename, "w", encoding="utf-8") as script_file:
-            script_file.write(cell_content)
+        with io.open(filename, "w", encoding="utf8") as script_file:
+            script_file.write(cell_content + "\n\n")
         return filename
 
     def _run_on_node(self, js_file: str, port: int = None) -> None:
@@ -498,11 +493,7 @@ class WebMagics(DisplayMagics):
         Returns:
             None
         """
-        if self._in_notebook:
-            loop = asyncio.get_event_loop()
-            loop.create_task(self._proc_mgmt.execute(js_file, port))
-        else:
-            asyncio.run(self._proc_mgmt.execute(js_file, port))
+        self._proc_mgmt.execute(js_file, port)
 
     @magic_arguments.magic_arguments()
     @javascript_args
@@ -584,7 +575,7 @@ def load_ipython_extension(ipython):
     try:
         web_magics = WebMagics(ipython)
         ipython.register_magics(web_magics)
-        ipython.node_magics = web_magics
+        ipython.web_magics = web_magics
     except (NameError, AttributeError):
         print("IPython shell not available.")
 
