@@ -9,16 +9,15 @@ section of the cell to mimic the browser's console.
 """
 
 from functools import partial
-from typing import Any, Callable, AnyStr
+from typing import Any, AnyStr
 from os import path, environ
-from asyncio import streams
-import asyncio
-import contextlib
+from threading import Thread, Event
 import io
 import uuid
 import shutil
 import sys
 import os
+import subprocess
 import psutil
 from IPython.core.magic import magics_class, cell_magic, line_magic
 from IPython.core.magics.display import DisplayMagics
@@ -155,104 +154,55 @@ document.getElementById('output-footer').appendChild(console_elems.h_title);
 """
 
 
+class OutputReader(Thread):
+    """
+    Thread that receives a process and reads its stdout,
+    printing the content to the output section of the cell.
+    """
+
+    def __init__(self, proc):
+        super().__init__()
+        self._stop_event = Event()
+        self._proc = proc
+        self._daemon = True
+        self.start()
+
+    def stop(self) -> None:
+        """Stops the thread execution"""
+        self._stop_event.set()
+
+    def run(self) -> None:
+        """
+        Runs the thread while no event for its termination is received.
+
+        Returns: None
+
+        """
+        while not self._stop_event.is_set():
+            for line in iter(self._proc.stdout.readline, ""):
+                line = line.strip()
+                if len(line) > 0:
+                    print(line)
+
+
 class NodeProcessManager:
     """Used to manage the execution of Node processes"""
 
     _node_cmd: str = "/usr/bin/node"
+    _daemons: dict[int, Any] = {}
 
     def __init__(self):
-        self._daemons: dict[int, Any] = {}
-        self._node_cmd = shutil.which(
-            "node"
-        )  # Try to discover full path of node command
+        # Try to discover full path of node command
+        self._node_cmd = shutil.which("node")
+        popen_kwargs = {
+            "stdin": subprocess.PIPE,
+            "stdout": subprocess.PIPE,
+            "stderr": subprocess.STDOUT,
+            "encoding": "utf-8",
+        }
+        self.popen = partial(subprocess.Popen, **popen_kwargs)
 
-    @classmethod
-    async def read_stream(
-        cls,
-        proc,
-        stream: streams.StreamReader,
-        callback: Callable[[AnyStr], None],
-    ) -> None:
-        """
-        Reads the stout/stderr stream of a given process
-
-        Args:
-            proc: the process to read the output from
-            stream: the stream to read from
-            callback: the callback function to call when data is read
-
-        Returns:
-            None
-        """
-        while proc.returncode is None:
-            data = await stream.readline()
-            if not data:
-                break
-            callback(data.decode().rstrip())
-
-    @contextlib.asynccontextmanager
-    async def open_process(
-        self,
-        cmd: str,
-        *cmd_args: dict,
-        work_dir: str = None,
-        env_vars: dict = None,
-        daemon: bool = False,
-        stdout_callback: Callable[[AnyStr], None] = print,
-    ) -> None:
-        """
-        Creates a new Node process
-
-        Args:
-            cmd: the command to execute
-            *cmd_args: the command arguments
-            work_dir: the path to the working directory
-            env_vars: the environment variables to set
-            daemon: True if the process will run in background
-            stdout_callback: the callback function to call when reading the output stream
-
-        Returns:
-            None
-        """
-        proc = await asyncio.create_subprocess_exec(
-            cmd,
-            *cmd_args,
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.STDOUT,
-            cwd=work_dir,
-            env=env_vars,
-        )
-        stream_task = asyncio.create_task(
-            self.read_stream(proc, proc.stdout, stdout_callback)
-        )
-
-        async def server_wait() -> None:
-            """Shields the execution and stream reader tasks for a background process"""
-            server_task = asyncio.create_task(proc.wait())
-            try:
-                await asyncio.shield(server_task)
-            except asyncio.CancelledError:
-                pass
-
-        try:
-            yield proc
-        finally:
-            if not daemon:
-                await proc.wait()
-                await stream_task
-            else:
-                try:
-                    await asyncio.wait_for(server_wait(), START_SERVER_TIMEOUT)
-                except asyncio.TimeoutError:
-                    pass
-
-    async def execute(
-        self,
-        js_file: str = None,
-        port: int = None,
-        stdout_callback: Callable[[AnyStr], None] = partial(print, flush=True),
-    ) -> None:
+    def execute(self, js_file: str = None, port: int = None) -> None:
         """
         Use Node.js to run the provided script. If a port is given,
         the script will be run in background without blocking the cell
@@ -260,28 +210,53 @@ class NodeProcessManager:
         Args:
             js_file: the full path to the JavaScript file
             port: the port number for the server
-            stdout_callback: the callback function to call when reading the output stream
 
         Returns:
             None
         """
+
+        def process_wait(process, timeout=None):
+            # Creates a thread to read the process stdout
+            reader = OutputReader(process)
+            finished = False
+
+            try:
+                # Wait until the process finishes, if it is not a server
+                if timeout:
+                    process.wait(timeout)
+                else:
+                    process.wait()
+                finished = True
+            except subprocess.TimeoutExpired:
+                pass
+            finally:
+                reader.stop()  # Free the resources to avoid 100% CPU usage
+            return finished
+
         server_env = environ.copy()
         if port:
             self.kill_daemon(port)  # Kill any Node process using the port
             server_env["NODE_PORT"] = str(port)
 
         work_dir = path.dirname(path.realpath(js_file))
-        daemon = port is not None
-        async with self.open_process(
-            self._node_cmd,
-            js_file,
-            work_dir=work_dir,
-            env_vars=server_env,
-            daemon=daemon,
-            stdout_callback=stdout_callback,
-        ) as proc:
-            if daemon:
+        is_daemon = port is not None
+        cmd_args = (self._node_cmd, js_file)
+
+        try:
+            proc = self.popen(cmd_args, env=server_env, cwd=work_dir)
+            if is_daemon:
+                self.kill_daemon(port)
+                # Wait for START_SERVER_TIMEOUT seconds for the server process to start and
+                # read its output until the timeout expires
+                process_wait(proc, START_SERVER_TIMEOUT)
                 self._daemons[port] = proc
+                proc.stdin.close()
+            else:
+                process_wait(proc)
+                proc.stdin.close()
+                proc.stdout.close()
+        except subprocess.SubprocessError as sub_error:
+            print(f"Error executing node script: {sub_error}")
 
     @classmethod
     def _force_kill(cls, port: int) -> None:
@@ -498,11 +473,7 @@ class WebMagics(DisplayMagics):
         Returns:
             None
         """
-        if self._in_notebook:
-            loop = asyncio.get_event_loop()
-            loop.create_task(self._proc_mgmt.execute(js_file, port))
-        else:
-            asyncio.run(self._proc_mgmt.execute(js_file, port))
+        self._proc_mgmt.execute(js_file, port)
 
     @magic_arguments.magic_arguments()
     @javascript_args
@@ -584,7 +555,7 @@ def load_ipython_extension(ipython):
     try:
         web_magics = WebMagics(ipython)
         ipython.register_magics(web_magics)
-        ipython.node_magics = web_magics
+        ipython.web_magics = web_magics
     except (NameError, AttributeError):
         print("IPython shell not available.")
 
