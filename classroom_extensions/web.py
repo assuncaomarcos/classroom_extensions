@@ -182,7 +182,7 @@ class OutputReader(Thread):
             for line in iter(self._proc.stdout.readline, ""):
                 line = line.strip()
                 if len(line) > 0:
-                    print(line)
+                    print(line, flush=True)
 
 
 class NodeProcessManager:
