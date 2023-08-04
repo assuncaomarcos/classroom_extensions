@@ -181,7 +181,8 @@ class OutputReader(Thread):
             for line in iter(self._proc.stdout.readline, ""):
                 line = line.strip()
                 if len(line) > 0:
-                    print(line, flush=True)
+                    sys.stdout.write(line)
+                    sys.stdout.flush()
 
 
 class NodeProcessManager:
@@ -255,18 +256,13 @@ class NodeProcessManager:
         except subprocess.SubprocessError as sub_error:
             print(f"Error executing node script: {sub_error}")
 
-    @classmethod
-    def _force_kill(cls, port: int) -> None:
+    @staticmethod
+    def _force_kill(port: int) -> None:
         """To kill a Node.js process listening on a given port"""
         for proc in psutil.process_iter(["pid", "name", "connections"]):
             try:
                 for conn in proc.connections():
                     if conn.status == psutil.CONN_LISTEN and conn.laddr.port == port:
-                        print(
-                            f"Killing existing {proc.name()} process, id {proc.pid} "
-                            f"and listening on port {port}",
-                            flush=True,
-                        )
                         proc.kill()
             except (psutil.AccessDenied, psutil.NoSuchProcess):
                 pass
