@@ -35,7 +35,7 @@ jobs:
           sudo apt-get install python3-zipp
           pip install -r requirements.txt
 
-      - name: Test with pytest & coverage
+      - name: Test & coverage
         run: |
             pip install coveralls
             coverage run -m unittest tests/run_tests.py

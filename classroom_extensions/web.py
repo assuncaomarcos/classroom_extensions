@@ -164,7 +164,6 @@ class OutputReader(Thread):
         super().__init__()
         self._stop_event = Event()
         self._proc = proc
-        self._daemon = True
         self.start()
 
     def stop(self) -> None:
@@ -232,13 +231,14 @@ class NodeProcessManager:
                 reader.stop()  # Free the resources to avoid 100% CPU usage
             return finished
 
+        is_daemon = False
         server_env = environ.copy()
         if port:
             self.kill_daemon(port)  # Kill any Node process using the port
             server_env["NODE_PORT"] = str(port)
+            is_daemon = True
 
         work_dir = path.dirname(path.realpath(js_file))
-        is_daemon = port is not None
         cmd_args = (self._node_cmd, js_file)
 
         try:
