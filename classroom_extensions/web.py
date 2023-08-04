@@ -195,7 +195,6 @@ class NodeProcessManager:
         # Try to discover full path of node command
         self._node_cmd = shutil.which("node")
         popen_kwargs = {
-            "stdin": subprocess.PIPE,
             "stdout": subprocess.PIPE,
             "stderr": subprocess.STDOUT,
             "encoding": "utf-8",
@@ -250,10 +249,8 @@ class NodeProcessManager:
                 # read its output until the timeout expires
                 process_wait(proc, START_SERVER_TIMEOUT)
                 self._daemons[port] = proc
-                proc.stdin.close()
             else:
                 process_wait(proc)
-                proc.stdin.close()
                 proc.stdout.close()
         except subprocess.SubprocessError as sub_error:
             print(f"Error executing node script: {sub_error}")
