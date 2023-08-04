@@ -53,34 +53,34 @@ class TestNodeJs(BaseTestCase):
         except ValueError:
             pass
 
-    # def test_node_server(self):
-    #     """Tests the creation of a Node.js server"""
-    #     print("Testing executing Node.js server...")
-    #     cell_output: str
-    #     cell_content = """
-    #         const http = require('http')
-    #
-    #         const hostname = 'localhost'
-    #         const port = process.env.NODE_PORT || 3000
-    #
-    #         const server = http.createServer((req, res) => {
-    #             res.statusCode = 200
-    #             res.setHeader('Content-Type', 'text/plain')
-    #             res.end('Hello world!')
-    #         })
-    #
-    #         server.listen(port, hostname, () => {
-    #             console.log(`Server listening at http://${hostname}:${port}/`)
-    #         })
-    #     """
-    #     with io.capture_output() as captured:
-    #         self.ipython.run_cell_magic(
-    #             "javascript",
-    #             line="--target=node --filename=/tmp/server.js --port=3000",
-    #             cell=f"{cell_content}",
-    #         )
-    #         cell_output = captured.stdout
-    #     self.assertRegex(cell_output.strip(), r"(Killing|Server)")
+    def test_node_server(self):
+        """Tests the creation of a Node.js server"""
+        print("Testing executing Node.js server...")
+        cell_output: str
+        cell_content = """
+            const http = require('http')
+
+            const hostname = 'localhost'
+            const port = process.env.NODE_PORT || 3000
+
+            const server = http.createServer((req, res) => {
+                res.statusCode = 200
+                res.setHeader('Content-Type', 'text/plain')
+                res.end('Hello world!')
+            })
+
+            server.listen(port, hostname, () => {
+                console.log(`Server listening at http://${hostname}:${port}/`)
+            })
+        """
+        with io.capture_output() as captured:
+            self.ipython.run_cell_magic(
+                "javascript",
+                line="--target=node --filename=/tmp/server.js --port=3000",
+                cell=f"{cell_content}",
+            )
+            cell_output = captured.stdout
+        self.assertRegex(cell_output.strip(), r"(Killing|Server)")
 
     def test_javascript(self):
         """Tests normal JavaScript code"""
