@@ -233,17 +233,24 @@ class NodeProcessManager:
             return finished
 
         is_daemon = False
+        start_new_session = False
         server_env = environ.copy()
         if port:
             self.kill_daemon(port)  # Kill any Node process using the port
             server_env["NODE_PORT"] = str(port)
             is_daemon = True
+            start_new_session = True
 
         work_dir = path.dirname(path.realpath(js_file))
         cmd_args = (self._node_cmd, js_file)
 
         try:
-            proc = self.popen(cmd_args, env=server_env, cwd=work_dir)
+            proc = self.popen(
+                cmd_args,
+                env=server_env,
+                cwd=work_dir,
+                start_new_session=start_new_session,
+            )
             if is_daemon:
                 self.kill_daemon(port)
                 # Wait for START_SERVER_TIMEOUT seconds for the server process to start and
