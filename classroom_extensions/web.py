@@ -9,7 +9,7 @@ section of the cell to mimic the browser's console.
 """
 
 from functools import partial
-from typing import Any, AnyStr
+from typing import Any, AnyStr, Dict
 from os import path, environ
 from threading import Thread, Event
 import io
@@ -189,7 +189,7 @@ class NodeProcessManager:
     """Used to manage the execution of Node processes"""
 
     _node_cmd: str = "/usr/bin/node"
-    _daemons: dict[int, Any] = {}
+    _daemons: Dict[int, Any] = {}
 
     def __init__(self):
         # Try to discover full path of node command
