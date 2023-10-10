@@ -1,4 +1,6 @@
-name: Install MariaDB client tools
+name: MariaDB client
+
+description: Install MariaDB client tools
 
 runs:
   using: 'composite'
@@ -14,7 +16,8 @@ runs:
       run: |
         sudo apt-get install wget software-properties-common dirmngr ca-certificates apt-transport-https -y
         wget https://r.mariadb.com/downloads/mariadb_repo_setup
-        echo "3a562a8861fc6362229314772c33c289d9096bafb0865ba4ea108847b78768d2  mariadb_repo_setup" | sha256sum -c -
+        
+        echo "935944a2ab2b2a48a47f68711b43ad2d698c97f1c3a7d074b34058060c2ad21b  mariadb_repo_setup" | sha256sum -c -
         chmod +x mariadb_repo_setup
         sudo ./mariadb_repo_setup --mariadb-server-version="mariadb-10.6"
         sudo apt update

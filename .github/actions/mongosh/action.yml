@@ -1,4 +1,6 @@
-name: Install MongoDB Shell
+name: MongoDB Shell
+
+description: Install MongoDB Shell
 
 runs:
   using: 'composite'
