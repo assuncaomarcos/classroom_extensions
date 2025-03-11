@@ -19,7 +19,7 @@ runs:
         
         echo "c4a0f3dade02c51a6a28ca3609a13d7a0f8910cccbb90935a2f218454d3a914a  mariadb_repo_setup" | sha256sum -c -
         chmod +x mariadb_repo_setup
-        sudo ./mariadb_repo_setup --mariadb-server-version="mariadb-10.6"
+        sudo ./mariadb_repo_setup 
         sudo apt update
 
     - name: Install MariaDB client tools
