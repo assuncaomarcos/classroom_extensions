@@ -17,7 +17,7 @@ runs:
         sudo apt-get install wget software-properties-common dirmngr ca-certificates apt-transport-https -y
         wget https://r.mariadb.com/downloads/mariadb_repo_setup
         
-        echo "935944a2ab2b2a48a47f68711b43ad2d698c97f1c3a7d074b34058060c2ad21b  mariadb_repo_setup" | sha256sum -c -
+        echo "c4a0f3dade02c51a6a28ca3609a13d7a0f8910cccbb90935a2f218454d3a914a  mariadb_repo_setup" | sha256sum -c -
         chmod +x mariadb_repo_setup
         sudo ./mariadb_repo_setup --mariadb-server-version="mariadb-10.6"
         sudo apt update
