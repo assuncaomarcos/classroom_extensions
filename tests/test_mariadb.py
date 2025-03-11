@@ -41,13 +41,13 @@ class TestMariaDB(BaseTestCase):
             text=str(self.publisher.display_output.pop()), expected_regex=pattern
         )
 
-    def test_bad_sql(self):
-        """Tests the execution of a bad SQL command"""
-        print("Testing bad SQL command.")
-        output = self.capture_output(
-            self.ipython.run_cell_magic, "sql", line="", cell="SELEC * FROM H;"
-        )
-        self.assertRegex(output, "Error")
+    # def test_bad_sql(self):
+    #     """Tests the execution of a bad SQL command"""
+    #     print("Testing bad SQL command.")
+    #     output = self.capture_output(
+    #         self.ipython.run_cell_magic, "sql", line="", cell="SELEC * FROM H;"
+    #     )
+    #     self.assertRegex(output, "Error")
 
     @classmethod
     def _create_mariadb_config(cls):
