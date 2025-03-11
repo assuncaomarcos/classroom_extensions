@@ -27,7 +27,7 @@ jobs:
         uses: ./.github/actions/mongosh
 
       - name: Start containers
-        run: docker-compose -f "docker-compose.yml" up -d --build
+        run: docker compose -f "docker-compose.yml" up -d --build
 
       - name: Install dependencies
         run: | 
