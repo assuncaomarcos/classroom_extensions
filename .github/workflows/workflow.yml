@@ -47,7 +47,7 @@ jobs:
             parallel: true
 
       - name: Stop containers
-        run: docker-compose -f "docker-compose.yml" down
+        run: docker compose -f "docker-compose.yml" down
 
   finish_build:
     name: Finish Coveralls
