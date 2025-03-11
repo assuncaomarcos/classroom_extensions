@@ -32,7 +32,7 @@ jobs:
       - name: Install dependencies
         run: | 
           sudo apt-get update
-          sudo apt-get install python3-zip
+          sudo apt-get install python3-zipp
           pip install -r requirements.txt
 
       - name: Test & coverage
