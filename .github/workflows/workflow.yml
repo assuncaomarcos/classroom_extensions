@@ -99,6 +99,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
+          name: wheel-files
           path: dist/*.whl
 
   build_sdist:
@@ -122,6 +123,7 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
+        name: source-files
         path: dist/*.tar.gz
 
   upload_pypi:
@@ -134,7 +136,12 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: artifact
+          name: wheel-files
+          path: dist
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: source-files
           path: dist
 
       - uses: pypa/gh-action-pypi-publish@v1.8.7
