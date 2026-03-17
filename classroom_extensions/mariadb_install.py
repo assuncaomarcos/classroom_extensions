@@ -98,7 +98,7 @@ class MariaDBInstaller(Magics):
         print("Installing MariaDB APT repository...")
         exec_cmd("apt install apt-transport-https curl -y")
         exec_cmd("mkdir -p /etc/apt/keyrings")
-        exec_cmd("curl -o /etc/apt/keyrings/mariadb-keyring.pgp 'https://mariadb.org/mariadb_release_signing_key.pgp'")
+        exec_cmd("curl -o /etc/apt/keyrings/mariadb-keyring.pgp \'https://mariadb.org/mariadb_release_signing_key.pgp\'")
 
         print("Running apt update...")
         exec_cmd("apt update -y")
