@@ -94,13 +94,19 @@ class MariaDBInstaller(Magics):
 
         self._db_pass = args.password
         load_sample_db = args.sample_db
+
+        print("Installing MariaDB APT repository...")
+        exec_cmd("apt install apt-transport-https curl -y")
+        exec_cmd("mkdir -p /etc/apt/keyrings")
+        exec_cmd("curl -o /etc/apt/keyrings/mariadb-keyring.pgp 'https://mariadb.org/mariadb_release_signing_key.pgp'")
+
         print("Running apt update...")
         exec_cmd("apt update -y")
         print("Installing MariaDB...")
-        exec_cmd("apt install mariadb-server libmariadb-dev libmariadb3 -y")
+        exec_cmd("apt install mariadb-server libmariadb3 libmariadb-dev mariadb-client -y")
         print("Installing required python packages...")
-        # exec_cmd("pip3 install mariadb==1.0.11 mariadb_kernel==0.2.0 sqlparse==0.4.4")
-        exec_cmd("mariadb mariadb_kernel sqlparse ibis-framework>=10.0 --upgrade")
+        # # exec_cmd("pip3 install mariadb==1.0.11 mariadb_kernel==0.2.0 sqlparse==0.4.4")
+        exec_cmd("pip3 install mariadb mariadb_kernel sqlparse ibis-framework>=10.0 \"cryptography<44,>=41.0.5\" --upgrade")
 
         self._start_mariadb()  # First start MariaDB
 
