@@ -100,7 +100,7 @@ class MariaDBInstaller(Magics):
         exec_cmd("apt install mariadb-server libmariadb-dev libmariadb3 -y")
         print("Installing required python packages...")
         # exec_cmd("pip3 install mariadb==1.0.11 mariadb_kernel==0.2.0 sqlparse==0.4.4")
-        exec_cmd("pip3 install mariadb mariadb_kernel sqlparse")
+        exec_cmd("mariadb mariadb_kernel sqlparse ibis-framework>=10.0 --upgrade")
 
         self._start_mariadb()  # First start MariaDB
 
