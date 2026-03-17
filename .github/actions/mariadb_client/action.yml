@@ -15,8 +15,8 @@ runs:
       shell: bash
       run: |
         sudo apt-get install wget software-properties-common dirmngr ca-certificates apt-transport-https -y
-        mkdir -p /etc/apt/keyrings
-        curl -o /etc/apt/keyrings/mariadb-keyring.pgp 'https://mariadb.org/mariadb_release_signing_key.pgp'
+        sudo mkdir -p /etc/apt/keyrings
+        sudo curl -o /etc/apt/keyrings/mariadb-keyring.pgp 'https://mariadb.org/mariadb_release_signing_key.pgp'
         sudo apt update
 
     - name: Install MariaDB client tools
