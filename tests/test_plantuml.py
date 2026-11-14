@@ -132,6 +132,17 @@ class TestPlantUML(BaseTestCase):
         except Exception as exception:
             self.fail(f"Error: {exception}")
 
+    def test_render_error(self):
+        """Tests handling of PlantUML rendering errors"""
+        print("Testing PlantUML rendering error handling...")
+        from unittest.mock import patch
+        magic = PlantUmlMagics(self.ipython)
+        with patch("plantweb.render.render", side_effect=Exception("Connection refused")):
+            output = self.capture_output(
+                magic.plantuml, line="", cell=_SIMPLE_DIAGRAM
+            )
+            self.assertIn("Error rendering PlantUML diagram", output)
+
     def test_load_extension(self):
         """Tests loading and unloading the extension"""
         print("Testing loading/unloading extension...")

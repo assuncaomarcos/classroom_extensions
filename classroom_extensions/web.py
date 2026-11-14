@@ -162,6 +162,7 @@ class OutputReader(Thread):
 
     def __init__(self, proc):
         super().__init__()
+        self.daemon = True
         self._stop_event = Event()
         self._proc = proc
         self.start()
@@ -192,7 +193,7 @@ class NodeProcessManager:
 
     def __init__(self):
         # Try to discover full path of node command
-        self._node_cmd = shutil.which("node")
+        self._node_cmd = shutil.which("node") or "node"
         popen_kwargs = {
             "stdout": subprocess.PIPE,
             "stderr": subprocess.STDOUT,
@@ -251,7 +252,6 @@ class NodeProcessManager:
                 start_new_session=start_new_session,
             )
             if is_daemon:
-                self.kill_daemon(port)
                 # Wait for START_SERVER_TIMEOUT seconds for the server process to start and
                 # read its output until the timeout expires
                 process_wait(proc, START_SERVER_TIMEOUT)
@@ -265,9 +265,9 @@ class NodeProcessManager:
     @staticmethod
     def _force_kill(port: int) -> None:
         """To kill a Node.js process listening on a given port"""
-        for proc in psutil.process_iter(["pid", "name", "connections"]):
+        for proc in psutil.process_iter(["pid", "name"]):
             try:
-                for conn in proc.connections():
+                for conn in proc.net_connections():
                     if conn.status == psutil.CONN_LISTEN and conn.laddr.port == port:
                         proc.kill()
             except (psutil.AccessDenied, psutil.NoSuchProcess):
@@ -457,7 +457,7 @@ class WebMagics(DisplayMagics):
         """
         if not filename:
             filename = f"{uuid.uuid4().hex}.js"
-        with io.open(filename, "w", encoding="utf-8") as script_file:
+        with open(filename, "w", encoding="utf-8") as script_file:
             script_file.write(cell_content)
         return filename
 
@@ -523,17 +523,27 @@ class WebMagics(DisplayMagics):
             stop_web_server(port)  # Stop any server that is currently running
             print(f"Starting server listening on port {port}...")
             self.shell.system_raw(
-                f"python -m http.server {port} --bind {address} --directory {directory} &"
+                f"{sys.executable} -m http.server {port} --bind {address} --directory {directory} &"
             )
 
         def stop_web_server(port):
             print(f"Stopping any server listening on port {port}...")
-            stop_cmd = (
-                r"ps -x | grep -e '[h]ttp.server\s*"
-                + str(port)
-                + "' | awk '{print $1}' | xargs -I {} kill {}"
-            )
-            self.shell.system_raw(stop_cmd)
+            stopped = False
+            for proc in psutil.process_iter(["pid", "name", "cmdline"]):
+                try:
+                    cmdline = " ".join(proc.info.get("cmdline") or [])
+                    if "http.server" in cmdline and str(port) in cmdline:
+                        proc.kill()
+                        stopped = True
+                except (psutil.AccessDenied, psutil.NoSuchProcess):
+                    pass
+            if not stopped:
+                stop_cmd = (
+                    r"ps -x | grep -e '[h]ttp.server\s*"
+                    + str(port)
+                    + "' | awk '{print $1}' | xargs -I {} kill {}"
+                )
+                self.shell.system_raw(stop_cmd)
 
         if args.action == "start":
             start_web_server(args.bind, args.directory, args.port)

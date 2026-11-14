@@ -42,11 +42,11 @@ def mongosh_args(func):
             "--tls", action="store_true", help="Enable TLS/SSL for the connection"
         ),
         magic_arguments.argument(
-            "--tlsCAFile", type=open, help="The path to the CA certificate file"
+            "--tlsCAFile", type=str, help="The path to the CA certificate file"
         ),
         magic_arguments.argument(
             "--tlsCertificateKeyFile",
-            type=open,
+            type=str,
             help="The path to the client certificate and private key file",
         ),
     ]

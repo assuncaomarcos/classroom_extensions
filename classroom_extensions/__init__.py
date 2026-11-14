@@ -12,5 +12,6 @@ __all__ = [
     "web",
     "plantuml",
     "mongodb",
-    "mongodb_install"
+    "mongodb_install",
+    "node_install",
 ]

@@ -70,15 +70,18 @@ class PlantUmlMagics(DisplayMagics):
         args = self.plantuml.parser.parse_args(argv)
         server = args.server if args.server else self._plantweb_config["server"]
 
-        output, out_format, _, _ = render.render(
-            cell, server=server, engine="plantuml", format=args.format
-        )
-        if out_format == "svg":
-            svg = SVG(data=output)
-            display(svg)
-        else:
-            img = Image(data=output)
-            display(img)
+        try:
+            output, out_format, _, _ = render.render(
+                cell, server=server, engine="plantuml", format=args.format
+            )
+            if out_format == "svg":
+                svg = SVG(data=output)
+                display(svg)
+            else:
+                img = Image(data=output)
+                display(img)
+        except Exception as exception:
+            print(f"Error rendering PlantUML diagram: {exception}")
 
     @magic_arguments.magic_arguments()
     @plantuml_args
@@ -128,7 +131,7 @@ class PlantUmlMagics(DisplayMagics):
 
 def load_ipython_extension(ipython) -> None:
     """
-    To unload the extension
+    To load the extension
     Args:
         ipython: the current interactive shell
 

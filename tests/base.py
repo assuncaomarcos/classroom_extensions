@@ -31,7 +31,7 @@ class BaseTestCase(unittest.TestCase):
         cls.ipython.log.addHandler(cls.log_handler)
         # To be able to intercept the calls to display()
         cls.previous_pub = cls.ipython.display_pub
-        cls.publisher = CaptureDisplayPub(cls.ipython.display_pub)
+        cls.publisher = CaptureDisplayPub(shell=cls.ipython)
         cls.ipython.display_pub = cls.publisher
 
     @classmethod

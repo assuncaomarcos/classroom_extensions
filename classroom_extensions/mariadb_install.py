@@ -72,7 +72,8 @@ class MariaDBInstaller(Magics):
     def _start_mariadb() -> None:
         """Starts MariaDB"""
 
-        service_name = "mariadb" if get_os_release().startswith("22") else "mysql"
+        os_major = get_os_release().split(".")[0] if get_os_release() else "0"
+        service_name = "mariadb" if os_major.isdigit() and int(os_major) >= 22 else "mysql"
         get_ipython().system_raw(f"service {service_name} start &")
         print("Waiting for a few seconds for MariaDB server to start...")
         time.sleep(_START_DB_TIMEOUT)
@@ -106,7 +107,7 @@ class MariaDBInstaller(Magics):
         exec_cmd("apt install mariadb-server libmariadb3 libmariadb-dev mariadb-client -y")
         print("Installing required python packages...")
         # # exec_cmd("pip3 install mariadb==1.0.11 mariadb_kernel==0.2.0 sqlparse==0.4.4")
-        exec_cmd("pip3 install mariadb mariadb_kernel sqlparse ibis-framework>=10.0 \"cryptography<44,>=41.0.5\" --upgrade")
+        exec_cmd('pip3 install mariadb mariadb_kernel sqlparse "ibis-framework>=10.0" "cryptography<44,>=41.0.5" --upgrade')
 
         self._start_mariadb()  # First start MariaDB
 
@@ -114,7 +115,7 @@ class MariaDBInstaller(Magics):
             f"ALTER USER '{self._db_user}'@'localhost' IDENTIFIED BY '{self._db_pass}'"
         )
         exec_cmd(f'mariadb -e "{sql_stmt}"')
-        exec_cmd("mkdir -p ~ /.jupyter")  # the config file must go in .jupyter
+        exec_cmd("mkdir -p ~/.jupyter")  # the config file must go in .jupyter
         config_path = path.join(path.expanduser("~"), ".jupyter/mariadb_config.json")
         client_conf = {
             "user": "root",

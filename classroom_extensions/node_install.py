@@ -13,7 +13,7 @@ from .util import exec_cmd, get_os_release, is_colab
 
 __all__ = ["load_ipython_extension", "unload_ipython_extension", "NodeInstaller"]
 
-_NODE_MAJOR = 18  # By default install version 18
+_NODE_MAJOR = 20  # By default install version 20 (Active LTS)
 
 
 @magics_class
@@ -37,7 +37,8 @@ class NodeInstaller(Magics):
         parser.add_argument(
             "-v",
             "--version",
-            choices=[16, _NODE_MAJOR, 20],
+            type=int,
+            choices=[18, 20, 22, 24],
             default=_NODE_MAJOR,
             help="the Node.js version to use",
         )

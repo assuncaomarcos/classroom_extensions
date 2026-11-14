@@ -5,6 +5,7 @@
 import unittest
 import os
 import uuid
+from unittest.mock import patch
 from classroom_extensions.mongodb import MongoDBConfig
 import classroom_extensions.mongodb as mongodb_ext
 from .base import BaseTestCase
@@ -31,11 +32,12 @@ class TestMongoDB(BaseTestCase):
         cls.config_file = f"{uuid.uuid4().hex}.json"
 
     def setUp(self) -> None:
-        # Load the extension
-        self.ipython.extension_manager.load_extension("classroom_extensions.mongodb")
-
         # Custom path to config files
         self.ipython.run_line_magic("env", "JUPYTER_CONFIG_DIR /tmp")
+
+        # Load the extension (mocking mongosh binary check if not present)
+        with patch("shutil.which", return_value="/usr/bin/mongosh"):
+            self.ipython.extension_manager.load_extension("classroom_extensions.mongodb")
 
     def tearDown(self):
         self.ipython.extension_manager.unload_extension("classroom_extensions.mongodb")
@@ -43,7 +45,9 @@ class TestMongoDB(BaseTestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         super().tearDownClass()
-        os.unlink(os.path.join("/tmp", cls.config_file))
+        cfg_path = os.path.join("/tmp", cls.config_file)
+        if os.path.exists(cfg_path):
+            os.unlink(cfg_path)
 
     def test_new_config(self):
         """Tests creating a new config file"""
@@ -52,6 +56,23 @@ class TestMongoDB(BaseTestCase):
         config.save()
         expected = " --host localhost --port 27017"
         self.assertEqual(expected, config.get_shell_args())
+
+    def test_tls_config(self):
+        """Tests TLS configuration serialization"""
+        print("Testing TLS config...")
+        config = MongoDBConfig(config_file=self.config_file)
+        config.update_config(
+            {
+                "tls": True,
+                "tlsCAFile": "/path/to/ca.pem",
+                "tlsCertificateKeyFile": "/path/to/cert.pem",
+            }
+        )
+        config.save()
+        shell_args = config.get_shell_args()
+        self.assertIn("--tls", shell_args)
+        self.assertIn("--tlsCAFile /path/to/ca.pem", shell_args)
+        self.assertIn("--tlsCertificateKeyFile /path/to/cert.pem", shell_args)
 
     def test_config_magic(self):
         """Tests the mongo_config line magic"""

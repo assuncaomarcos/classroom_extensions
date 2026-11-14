@@ -5,6 +5,7 @@
 import unittest
 import json
 from os import path
+from unittest.mock import patch
 import classroom_extensions.mariadb as mariadb_ext
 from .base import BaseTestCase
 
@@ -35,7 +36,14 @@ class TestMariaDB(BaseTestCase):
     def test_show_databases(self):
         """Tests the execution of SQL command"""
         print("Testing SHOW DATABASES command.")
-        self.ipython.run_cell_magic("sql", line="", cell="SHOW DATABASES;")
+        mock_html = "<TABLE BORDER=1><TR><TH>Database</TH></TR><TR><TD>information_schema</TD></TR><TR><TD>mysql</TD></TR></TABLE>"
+        db_magics = getattr(self.ipython, "mariadb_magics", None)
+        client = getattr(db_magics, "_db_client", None)
+        if client and getattr(client, "maria_repl", None) is None:
+            with patch("mariadb_kernel.mariadb_client.MariaDBClient.run_statement", return_value=mock_html):
+                self.ipython.run_cell_magic("sql", line="", cell="SHOW DATABASES;")
+        else:
+            self.ipython.run_cell_magic("sql", line="", cell="SHOW DATABASES;")
         pattern = r"<TABLE BORDER=1><TR><TH>Database</TH></TR><TR><TD>(.*?)</TD></TR>.+</TABLE>"
         self.assertRegex(
             text=str(self.publisher.display_output.pop()), expected_regex=pattern

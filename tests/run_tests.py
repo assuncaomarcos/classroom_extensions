@@ -11,6 +11,7 @@ from .test_mariadb import TestMariaDB
 from .test_plantuml import TestPlantUML
 from .test_web import TestNodeJs
 from .test_mongodb import TestMongoDB
+from .test_util_and_installers import TestUtilAndInstallers
 
 # test_suite = unittest.TestSuite()
 

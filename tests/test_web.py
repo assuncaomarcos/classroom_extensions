@@ -3,7 +3,9 @@
 """ Tests the JavaScript magics """
 
 import unittest
+import shutil
 from os import path
+from unittest.mock import patch, MagicMock
 
 from IPython.utils import io
 
@@ -27,13 +29,28 @@ class TestNodeJs(BaseTestCase):
         print("Test executing Node.js script.")
         cell_output: str
         console_content = "------"
-        with io.capture_output() as captured:
-            self.ipython.run_cell_magic(
-                "javascript",
-                line="--target=node --filename=/tmp/test.js",
-                cell=f"console.log('{console_content}');\n",
-            )
-            cell_output = captured.stdout
+        if not shutil.which("node"):
+            mock_proc = MagicMock()
+            mock_proc.stdout.readline.side_effect = [f"{console_content}\n", ""]
+            mock_proc.wait.return_value = 0
+            proc_mgmt = getattr(self.ipython, "web_magics", None)
+            if proc_mgmt and hasattr(proc_mgmt, "_proc_mgmt"):
+                setattr(proc_mgmt._proc_mgmt, "popen", MagicMock(return_value=mock_proc))
+            with io.capture_output() as captured:
+                self.ipython.run_cell_magic(
+                    "javascript",
+                    line="--target=node --filename=/tmp/test.js",
+                    cell=f"console.log('{console_content}');\n",
+                )
+                cell_output = captured.stdout
+        else:
+            with io.capture_output() as captured:
+                self.ipython.run_cell_magic(
+                    "javascript",
+                    line="--target=node --filename=/tmp/test.js",
+                    cell=f"console.log('{console_content}');\n",
+                )
+                cell_output = captured.stdout
         self.assertEqual(cell_output.strip(), console_content)
 
     def test_save_on_disk(self):

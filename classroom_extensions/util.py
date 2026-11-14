@@ -6,6 +6,7 @@
 import subprocess
 import os
 import pwd
+import builtins
 
 
 _IN_COLAB = False
@@ -70,4 +71,4 @@ def is_extension() -> bool:
     Returns:
         True if loaded as extension via %load_ext
     """
-    return "__IPYTHON__" in globals()
+    return hasattr(builtins, "__IPYTHON__")

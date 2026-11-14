@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python 3.x
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.9'
 
@@ -41,7 +41,7 @@ jobs:
             coverage run -m unittest tests/run_tests.py
             coverage report -m
       - name: Coveralls Parallel
-        uses: AndreMiras/coveralls-python-action@develop
+        uses: AndreMiras/coveralls-python-action@v20201129
         with:
             github-token: ${{ secrets.github_token }}
             parallel: true
@@ -55,7 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Finished
-        uses: AndreMiras/coveralls-python-action@develop
+        uses: AndreMiras/coveralls-python-action@v20201129
         with:
           github-token: ${{ secrets.github_token }}
           parallel-finished: true
@@ -69,7 +69,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python 3.x
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.9'
 

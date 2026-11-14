@@ -24,16 +24,16 @@ _SOFTWARE_DESC = {"mongo": "MongoDB"}
 _INSTALL_CMDS = {
     "mongo": [
         "apt update -y",
-        "apt-get install gnupg curl",
-        """curl -fsSL https://pgp.mongodb.com/server-6.0.asc | \
-             gpg -o /usr/share/keyrings/mongodb-server-6.0.gpg \
-             --dearmor""",
-        "sudo apt-get install gnupg",
-        "echo 'deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg ] "
-        "https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse' "
-        "| tee /etc/apt/sources.list.d/mongodb-org-6.0.list",
+        "apt-get install -y gnupg curl ca-certificates lsb-release",
+        "mkdir -p /etc/apt/keyrings",
+        """curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc | \
+             gpg -o /etc/apt/keyrings/mongodb-server-8.0.gpg \
+             --dearmor --yes""",
+        "echo 'deb [ arch=amd64,arm64 signed-by=/etc/apt/keyrings/mongodb-server-8.0.gpg ] "
+        "https://repo.mongodb.org/apt/ubuntu '\"$(lsb_release -cs)\"'/mongodb-org/8.0 multiverse' "
+        "| tee /etc/apt/sources.list.d/mongodb-org-8.0.list",
         "apt update -y",
-        "apt-get install -y mongodb-org",
+        "apt-get install -y mongodb-org mongodb-mongosh",
     ],
 }
 
@@ -105,7 +105,7 @@ class MongoDBInstaller(Magics):
             datasets = [
                 f
                 for f in os.listdir(local_clone)
-                if not path.isfile(path.join(local_clone, f))
+                if not f.startswith(".") and not path.isfile(path.join(local_clone, f))
             ]
             for dataset in datasets:
                 dataset_path = path.join(clone_path, dataset)
