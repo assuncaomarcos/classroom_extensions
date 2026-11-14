@@ -46,7 +46,7 @@ dependencies = ["ipython", "psutil>=5.9.5", "plantweb" ]
 version = {attr = "classroom_extensions.__version__"}
 
 [project.optional-dependencies]
-dev = ["ipython", "jupyter", "mariadb>=1.0.11", "mariadb-kernel==0.2.0", "sqlparse"]
+dev = ["ipython", "jupyter", "mariadb>=1.0.11", "mariadb-kernel==0.2.0", "mycli>=1.31,<1.64", "sqlparse"]
 test = ["pytest", "coverage"]
 
 [project.urls]
