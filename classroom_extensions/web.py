@@ -267,7 +267,9 @@ class NodeProcessManager:
         """To kill a Node.js process listening on a given port"""
         for proc in psutil.process_iter(["pid", "name"]):
             try:
-                for conn in proc.net_connections():
+                # psutil < 6.0 (e.g. preinstalled on Colab) only has connections()
+                get_connections = getattr(proc, "net_connections", None) or proc.connections
+                for conn in get_connections():
                     if conn.status == psutil.CONN_LISTEN and conn.laddr.port == port:
                         proc.kill()
             except (psutil.AccessDenied, psutil.NoSuchProcess):
